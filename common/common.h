@@ -8,10 +8,11 @@
 
 #define TRAINING_DATA_LENGTH 150
 #define INPUT_LENGTH 4
-#define WITHFLOAT
+#define WITHFLOAT 1
 
 #ifdef WITHFLOAT
     #define real_t   float
+    #define element_t float
 #else
     #define real_t	double
 #endif
