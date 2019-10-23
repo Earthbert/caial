@@ -113,7 +113,8 @@ for(j = 2; j <= n*2; j += 2){
 	aux3 = aux3 * aux2;
 	aux4 = four / aux3;
 	aux5 = sign * aux4;
-  pi = pi + sign * (four / (i * (i + one) * (i + two)));
+  //pi = pi + sign * (four / (i * (i + one) * (i + two)));
+  pi = pi + aux5;
   sign = sign * minus_one;
   i = i + two;
   }

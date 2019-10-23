@@ -4,7 +4,7 @@
 # set the name of the config you want to use for simulation
 # 	you must compile the simulator by yourself first
 ROCKET_CHIP ?= ${ROCKETCHIP}
-SIMCONFIG ?= DefaultConfig-debug	
+SIMCONFIG ?= DefaultConfigRBB-debug
 
 # enable process substitution
 SHELL=/bin/bash
