@@ -100,7 +100,7 @@ element_t classify_dnn_1(element_t test_data[], size_t input_length,
     * return_value 1 x 1
     * return_value = test_data.T x weights
     */
-    vector_T_multiply_vector(thetest_datata, weights, input_length,
+    vector_T_multiply_vector(test_data, weights, input_length,
                              &return_value);
     /*
     * f sigmoid function

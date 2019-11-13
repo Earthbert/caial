@@ -30,9 +30,9 @@ element_t euclidian_distance_square (element_t X[], element_t Y[], size_t length
 /*
 * Initialize the cluster means and training data point position in cluster
 */
-void initialise_cluster(element_t training_data_X[][], size_t training_position_cluster[],
+void initialise_cluster(element_t training_data_X[][INPUT_LENGTH], size_t training_position_cluster[],
                         size_t training_data_length, size_t input_length,
-                        element_t cluster_mean[][], size_t cluster_len[],
+                        element_t cluster_mean[][INPUT_LENGTH], size_t cluster_len[],
                         size_t k) {
     size_t index, jindex, kindex;
     element_t min;
@@ -59,7 +59,7 @@ void initialise_cluster(element_t training_data_X[][], size_t training_position_
         max = training_data_X[0][index];
         for(jindex = 1; jindex < training_data_length; jindex++) {
             if(min > training_data_X[jindex][index]) {
-                mins = training_data_X[jindex][index];
+                min = training_data_X[jindex][index];
             }
             if(max < training_data_X[jindex][index]) {
                 max = training_data_X[jindex][index];
@@ -74,7 +74,7 @@ void initialise_cluster(element_t training_data_X[][], size_t training_position_
 * It calculates the colsest cluster mean to the given point X and return
 * the cluster index
 */
-size_t classify_cluster(element_t X[], element_t cluster_mean[][],
+size_t classify_cluster(element_t X[], element_t cluster_mean[][INPUT_LENGTH],
                         size_t input_length, size_t k) {
     size_t kindex;
     element_t min;
@@ -95,7 +95,7 @@ size_t classify_cluster(element_t X[], element_t cluster_mean[][],
 /*
 * it deletes the X point from the cluster and recalculate the mean
 */
-void update_mean_minus(element_t X[], element_t cluster_mean[][],
+void update_mean_minus(element_t X[], element_t cluster_mean[][INPUT_LENGTH],
                        size_t cluster_len[], size_t input_length,
                        size_t kindex) {
     size_t index;
@@ -109,7 +109,7 @@ void update_mean_minus(element_t X[], element_t cluster_mean[][],
 /*
 * it add the X point to the cluster and recalculate the mean
 */
-void update_mean_plus(element_t X[], element_t cluster_mean[][],
+void update_mean_plus(element_t X[], element_t cluster_mean[][INPUT_LENGTH],
                        size_t cluster_len[], size_t input_length,
                        size_t kindex)  {
     size_t index;
@@ -123,9 +123,9 @@ void update_mean_plus(element_t X[], element_t cluster_mean[][],
 /*
 * It is training the a kmeans clusters with training_data_X
 */
-void training_kmeans(element_t training_data_X[][], size_t training_position_cluster[],
+void training_kmeans(element_t training_data_X[][INPUT_LENGTH], size_t training_position_cluster[],
                         size_t training_data_length, size_t input_length,
-                        element_t cluster_mean[][], size_t cluster_len[],
+                        element_t cluster_mean[][INPUT_LENGTH], size_t cluster_len[],
                         size_t k, size_t max_iterations) {
     size_t index, jindex, kindex, old_kindex;
     size_t has_changed;
@@ -164,7 +164,7 @@ void training_kmeans(element_t training_data_X[][], size_t training_position_clu
 void kmeans_clusters_value(element_t cluster_value[],
                               element_t training_data_Y[], size_t training_position_cluster[],
                               size_t training_data_length, size_t k) {
-    size_t index, jidenx, kindex;
+    size_t index, jindex, kindex;
     size_t current_frequency;
     size_t max_frequency;
     for(kindex = 0; kindex < k; kindex++) {
@@ -176,9 +176,9 @@ void kmeans_clusters_value(element_t cluster_value[],
                 * Search the same value in the next points in training data,
                 * because if the values has also before it was already counted
                 */
-                for(index = jidnex + 1; index < training_data_length; index++) {
+                for(index = jindex + 1; index < training_data_length; index++) {
                     if(training_position_cluster[index] == kindex) {
-                        if(training_data_Y[jidnex] == training_data_Y[index]) {
+                        if(training_data_Y[jindex] == training_data_Y[index]) {
                             current_frequency = current_frequency + 1;
                         }
                     }
@@ -200,7 +200,7 @@ void kmeans_clusters_value(element_t cluster_value[],
 */
 element_t classify_kmeans(element_t test_data[], element_t cluster_value[],
                           size_t input_length,
-                          element_t cluster_mean[][], size_t k) {
+                          element_t cluster_mean[][INPUT_LENGTH], size_t k) {
     size_t kindex;
     element_t return_value;
     kindex = classify_cluster(test_data, cluster_mean, input_length, k);
@@ -223,10 +223,10 @@ int main(void)
                     K_VALUE, MAX_ITERATIONS);
     kmeans_clusters_value(g_cluster_value,
                           g_training_data_Y, g_training_position_cluster,
-                          TRAINING_DATA_LENGTH, K_VALUE)
+                          TRAINING_DATA_LENGTH, K_VALUE);
     element_t answer = classify_kmeans(g_test_data, g_cluster_value,
                                        INPUT_LENGTH,
-                                       g_cluster_mean[][], K_VALUE);
+                                       g_cluster_mean, K_VALUE);
     #ifdef DEBUG
         printf("Result: %f\n", answer);
     #endif

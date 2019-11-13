@@ -3,8 +3,8 @@
 // Language: C
 // Author: Jose Cintra (jose.cintra@html-apps.info)
 
-#define WITH_POSIT_16
-
+#define WITH_POSIT_32
+#define VIETE
 #ifdef VIETE
 #define WITH_SQRT
 #endif

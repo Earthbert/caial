@@ -298,7 +298,7 @@ size_t classify_CT(size_t index, size_t tree_atribute_index[],
 int main(void)
 {   
     convert_to_CT(g_training_data_Y, TRAINING_DATA_LENGTH,
-                  g_training_data_Y_CT[], OUTPUT_GROUPS_LENGTH); 
+                  g_training_data_Y_CT, OUTPUT_GROUPS_LENGTH); 
     creating_tree(0, g_training_data_X, g_training_data_length,
                   INPUT_LENGTH, g_training_data_Y_CT, g_tree_atributes_remained,
                   OUTPUT_GROUPS_LENGTH, g_tree_atribute_index, g_tree_atribute_value,

@@ -68,5 +68,5 @@ int main() {
 #ifdef PFDEBUG
   printf("%15.14f\n", e);
 #endif
-	return 1;
+	return 0;
 }
