@@ -1,10 +1,10 @@
 set remotetimeout 50000000
 target remote localhost:3333
 load
-b nilakantha
+b main
 cont
-b 166
+b 302
 cont
-x /1wx &pi
-print pi
+x /1wx &result
+print result
 quit

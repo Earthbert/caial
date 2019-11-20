@@ -2,7 +2,7 @@
  * Compute e using Euler's formula
  */
 // #define PFDEBUG
-#define WITH_POSIT_16
+#define WITH_POSIT_8
 
 #include<stdint.h>
 

@@ -51,4 +51,6 @@ simoptv: $(APP)_opted.riscv
 strip: $(APP).riscv
 	awk 'NF>2 && NR>5 { split($$1, subfield, ":"); print "00000000"subfield[1] }' $(APP).riscv.dump > pc_list.tmp
 	awk -F "[][]" 'NR == FNR { a[$$0]; next } {if(($$4 in a) && ($$14!="0000a001")) print $$0}' pc_list.tmp simv.log > strip_simv.log
+	spike-dasm < strip_simv.log > strip_simv_2.log
+	python parser.py strip_simv_2.log output
 	rm pc_list.tmp
