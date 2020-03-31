@@ -3,7 +3,7 @@
 // Language: C
 // Author: Jose Cintra (jose.cintra@html-apps.info)
 
-#define WITH_POSIT_8
+#define WITH_POSIT_32
 #define SER4
 #ifdef VIETE
 #define WITH_SQRT
@@ -275,8 +275,39 @@ void calculate_series_4(int n) {
 #endif
 }
 
+
+void test_conversion(int n) {
+#if (defined WITH_POSIT_8 || defined WITH_POSIT_16 || defined WITH_POSIT_32)
+  *((uint32_t*)&a_n) = posit_zero;
+  *((uint32_t*)&x_element) = posit_one;
+  *((uint32_t*)&s_n) = posit_one;
+  *((uint32_t*)&i) = posit_one;
+  *((uint32_t*)&sign) = posit_one;
+#else
+  *((uint32_t*)&a_n) = fp32_zero;
+  *((uint32_t*)&x_element) = fp32_one;
+  *((uint32_t*)&s_n) = fp32_one;
+  *((uint32_t*)&i) = fp32_two;
+  *((uint32_t*)&sign) = fp32_one;
+#endif
+  int index;
+  int jindex;
+
+  for(index = 1; index <= n; index++){
+      x_element = (float) index;
+      jindex = (int) i;
+      i = i + one;
+  }
+#ifdef PFDEBUG
+  printf("\nAproximated value of PI = %1.16lf\n", pi);  
+#endif
+}
+
+
 int main() {
   init();
+
+  test_conversion(100);
 
   #ifdef SEQ1
   calculate_sequence_1(100);
