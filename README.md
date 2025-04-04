@@ -5,100 +5,49 @@ Currently are implemented the the next AI algoritms Classification Tree (CT),K-n
 
 ## Getting Started
 
-These instructions will get you a copy of the project up and running on your local machine for development and testing purposes. See deployment for notes on how to deploy the project on a live system.
+These instructions will get help you run these algorithm on the rocket-chip.
 
 ### Prerequisites
-Tested on Ubuntu 16.04
 
-* Ubuntu 16.04 (inital setup)
-```
-sudo apt-get update
-sudo apt-get upgrade -y
-sudo apt-get install git -y
-mkdir -p riscv/riscv-tools
-```
-
-* rocket-tools requirments
-```
-sudo apt-get install autoconf automake autotools-dev curl libmpc-dev libmpfr-dev libgmp-dev libusb-1.0-0-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev device-tree-compiler pkg-config libexpat-dev -y
-```
-* chistel requirments
-
-1. java
-```
-sudo apt-get install default-jdk -y
-```
-
-2. sbt
-```
-echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
-sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
-sudo apt-get update
-sudo apt-get install sbt -y
-```
-
-3. verilator
-```
-sudo apt-get install git make autoconf g++ flex bison -y
-git clone http://git.veripool.org/git/verilator
-cd verilator
-git checkout verilator_4_006
-unset VERILATOR_ROOT
-autoconf
-./configure
-make
-sudo make install
-cd
-```
-
-* rocket-tools
-```
-git clone --recursive  https://github.com/freechipsproject/rocket-tools
-cd rocket-tools
-export RISCV=/riscv/rocket-tools
-./build.sh
-export PATH=$PATH:$RISCV/bin
-echo "export RISCV=/riscv/rocket-tools" >> .bashrc
-echo "export PATH=$PATH:$RISCV/bin" >> .bashrc
-cd
-```
+[Nix](https://nix.dev/install-nix.html) installed on your system.
 
 
 * rocket chip
 ```
-git clone --recursive  https://github.com/sdcioc/rocket-chip
+git clone https://github.com/Earthbert/rocket-chip
 cd rocket-chip
-export ROCKETCHIP=`pwd`
-echo "export ROCKETCHIP="$ROCKETCHIP >> .bashrc
-cd $ROCKETCHIP/emulator
-make debug
-cd
-```
-* riscv-tests
-```
-git clone --recursive https://github.com/riscv/riscv-tests
-cd riscv-tests
-autoconf
-./configure --prefix=$RISCV/target
-make
-sudo make install
-export RISCVTESTS=`pwd`
-echo "export RISCVTESTS="$RISCVTESTS >> .bashrc
-cd
+submodule update --init --recursive
 ```
 
-* bprof requirments
+### Setup
+
+* nix development env
 ```
-sudo apt-get -y install python-pip
-pip install numpy
+# Inside rocket-chip project
+# You can also enable these experimental features in "~/.config/nix/nix.conf", to shorten the command
+nix develop --extra-experimental-features nix-command --extra-experimental-features flakes
 ```
 
+**IMPORTANT**: You always need to have use this to have access to needed tools
+
+* create a emulator config
+
+```
+# Inside rocket-chip project, with nix active
+mill emulator[freechips.rocketchip.system.TestHarness,freechips.rocketchip.system.$CONFIG_NAME].verilator.elf
+```
+
+* listing posible configs
+```
+# Inside rocket-chip project, with nix active
+mill resolve emulator._
+```
 
 ### Installing
 
 * Clone and build the repo
 ```
-git clone https://github.com/sdcioc/caial.git
+git clone https://github.com/Earthbert/caial
 make
 make simv
 make strip
@@ -164,24 +113,15 @@ cat output.csv
 ## Docker Deployment
 
 If you want to use dockers. First you will have to install docker.
-Ubuntu 16.04 tested
-```
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
-sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-sudo apt-get update
-sudo apt-get install -y docker-ce
-
-```
 
 ### Build the docker image
 ```
-cd docker
-docker build .
+docker build -t caial docker
 ```
 
 ### Run docker with local git repo as a volume
 ```
-docker run -it -v `pwd`:/caial-dev caial bash
+docker run -it -v `pwd`:/project/caial caial
 ```
 
 ### Download docker image

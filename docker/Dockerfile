@@ -1,78 +1,23 @@
-FROM ubuntu:16.04
-RUN chown root:root /tmp && chmod 1777 /tmp
-RUN apt-get update && apt-get upgrade -y
-RUN apt-get install -y \
-	git \
-	autoconf \
-	automake \
-	autotools-dev \
-	curl \
-	libmpc-dev \
-	libmpfr-dev \
-	libgmp-dev \
-	libusb-1.0-0-dev \
-	gawk build-essential \
-	bison \
-	flex \
-	texinfo \
-	gperf \
-	libtool \
-	patchutils \
-	bc \
-	zlib1g-dev \
-	device-tree-compiler \
-	pkg-config \
-	libexpat-dev \
-	default-jdk \
-	make \
-	g++ \
-	python \
-	python-pip \
-	vim \
-	wget \
-	apt-transport-https \
-	ca-certificates
-RUN echo "deb https://dl.bintray.com/sbt/debian /" | tee -a /etc/apt/sources.list.d/sbt.list \
-	&& apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823 \
-	&& apt-get update \
-	&& apt-get install -y sbt
-RUN mkdir riscv \
-	&& cd riscv \
-	&& mkdir riscv-tools
-RUN cd riscv \
-	&& git clone http://git.veripool.org/git/verilator \
-	&& cd verilator \
-	&& git checkout verilator_4_006 \
-	&& unset VERILATOR_ROOT \
-	&& autoconf \
-	&& ./configure \
-	&& make \
-	&& make install
-ENV RISCV /riscv/riscv-tools
-RUN cd riscv \
-	&& git clone --recursive  https://github.com/freechipsproject/rocket-tools \
-	&& cd rocket-tools \ 
-	&& ./build.sh
-ENV PATH ${PATH}:${RISCV}/bin
-ENV ROCKETCHIP /riscv/rocket-chip
-RUN cd riscv \
-	&& git clone --recursive  https://github.com/sdcioc/rocket-chip
-RUN cd riscv \
-	&& cd rocket-chip \
-	&& cd emulator \
-	&& make debug || true
-RUN cd riscv \
-	&& cd rocket-chip \
-	&& cd emulator \
-	&& make debug
-RUN cd riscv \
-	&& git clone --recursive  https://github.com/riscv/riscv-tests \
-	&& cd riscv-tests \
-	&& autoconf \
-	&& ./configure --prefix=$RISCV/target \
-	&& make \
-	&& make install
-ENV RISCVTESTS /riscv/riscv-tests
-RUN git clone https://github.com/sdcioc/caial.git \
-	&& pip install numpy
+FROM nixos/nix
 
+WORKDIR /project
+RUN git clone https://github.com/Earthbert/rocket-chip
+WORKDIR /project/rocket-chip
+RUN git submodule update --init --recursive
+
+RUN nix develop --extra-experimental-features nix-command --extra-experimental-features flakes --command true
+
+RUN echo '#!/bin/sh' > /project/entrypoint.sh && \
+    echo 'cd /project/rocket-chip' >> /project/entrypoint.sh && \
+    echo 'exec nix develop --extra-experimental-features nix-command --extra-experimental-features flakes --command sh -c "cd /project/caial; exec sh"' >> /project/entrypoint.sh && \
+    chmod +x /project/entrypoint.sh
+
+WORKDIR /project/caial
+
+
+ENV SHELL=/project/entrypoint.sh
+
+VOLUME [ "/project/caial" ]
+
+ENTRYPOINT [ "/bin/sh", "-c" ]
+CMD [ "if [ -t 0 ]; then $SHELL; else exec \"$@\"; fi" ]
