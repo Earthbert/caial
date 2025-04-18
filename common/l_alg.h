@@ -2,7 +2,9 @@
 #define _L_ALG_H_
 #include "common.h"
 
-#define EXPONENTIAL_PRECISION
+void *memset(void *ptr, int value, long unsigned int num);
+
+#define EXPONENTIAL_PRECISION 5
 /**
  * Returns approximate value of e^x
  * using sum of first n terms of Taylor Series
@@ -92,7 +94,7 @@ void vector_difference (element_t i_vector_A[], element_t i_vector_B[],
 void vector_multiply_elementwise (element_t i_vector_A[], element_t i_vector_B[],
                                   size_t i_length, element_t o_vector_C[]) {
     size_t index;
-    for (index = 0; index < length; index++) {
+    for (index = 0; index < i_length; index++) {
         o_vector_C[index] = i_vector_A[index] * i_vector_B[index];
     }
 }
@@ -110,7 +112,7 @@ void vector_multiply_elementwise (element_t i_vector_A[], element_t i_vector_B[]
 void vector_multiply_scalar(element_t i_vector_A[], size_t i_length,
                             element_t i_scalar, element_t o_vector_B[]) {
     size_t index;
-    for (index = 0; i < i_length; index++) {
+    for (index = 0; index < i_length; index++) {
         o_vector_B[index] = i_vector_A[index] * i_scalar;
     }
 }
@@ -151,7 +153,7 @@ void vector_sigmoid_derivate (element_t i_vector_A[], size_t i_length,
                               element_t o_vector_B[])  {
     size_t index;
     for (index = 0; index < i_length; index++) {
-        o_vector_B[i] = i_vector_A[index] * (1 - i_vector_A[index]);
+        o_vector_B[index] = i_vector_A[index] * (1 - i_vector_A[index]);
     }
 }
 
@@ -164,8 +166,8 @@ void vector_sigmoid_derivate (element_t i_vector_A[], size_t i_length,
  * Output: 
  *  o_matrix_B: a matrix B=A.T
  */
-void matrix_transpose(element_t i_matrix_A[][], size_t i_rows,
-                      size_t i_columns, element_t o_matrix_B[][]) {
+void matrix_transpose(element_t **i_matrix_A, size_t i_rows,
+                      size_t i_columns, element_t **o_matrix_B) {
     size_t index, jindex;
     for(index = 0; index < i_rows; index++) {
         for(jindex = 0; jindex < i_columns; jindex++) {
@@ -184,14 +186,14 @@ void matrix_transpose(element_t i_matrix_A[][], size_t i_rows,
  * Output: 
  *  o_vector_C: a vector C=A*B size i_rows x 1
  */
-void matrix_multiply_vector(element_t i_matrix_A[][], size_t i_rows, size_t i_columns,
+void matrix_multiply_vector(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
                             element_t i_vector_B[], element_t o_vector_C[]) {
     size_t index, jindex;
     for(index = 0; index < i_rows; index++) {
         o_vector_C[index] = 0;
         for(jindex = 0; jindex < i_columns; jindex++) {
             o_vector_C[index] = o_vector_C[index]
-                                + i_matrix_A[index][jindex] * i_vector_B[jindex];
+                                + i_matrix_A[index * i_rows + jindex] * i_vector_B[jindex];
         }
     }
 }
@@ -206,14 +208,14 @@ void matrix_multiply_vector(element_t i_matrix_A[][], size_t i_rows, size_t i_co
  * Output: 
  *  o_vector_C: a vector C=A*B size i_columns x 1
  */
-void matrix_T_multiply_vector(element_t i_matrix_A[][], size_t i_rows, size_t i_columns,
+void matrix_T_multiply_vector(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
                             element_t i_vector_B[], element_t o_vector_C[]) {
     size_t index, jindex;
     for(index = 0; index < i_columns; index++) {
         o_vector_C[index] = 0;
         for(jindex = 0; jindex < i_rows; jindex++) {
             o_vector_C[index] = o_vector_C[index]
-                                + i_matrix_A[jindex][index] * i_vector_B[jindex];
+                                + i_matrix_A[jindex * i_rows + index] * i_vector_B[jindex];
         }
     }
 }
@@ -229,17 +231,17 @@ void matrix_T_multiply_vector(element_t i_matrix_A[][], size_t i_rows, size_t i_
  * Output: 
  *  o_matrix_C: a matrix C=A.T*B size i_rows x i_columns
  */
-void matrix_T_multiply_matrix(element_t i_matrix_A[][], element_t i_matrix_B[][],
-                            size_t i_rows, size_t i_middle, size_t i_columns
-                            element_t o_matrix_C[][]) {
+void matrix_T_multiply_matrix(element_t *i_matrix_A, element_t *i_matrix_B,
+                            size_t i_rows, size_t i_middle, size_t i_columns,
+                            element_t *o_matrix_C) {
 	size_t index, jindex, kindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-			o_matrix_C[index][jindex] = 0;
+			o_matrix_C[index * i_rows + jindex] = 0;
 			for (kindex = 0; kindex < i_middle; kindex++) {
-				o_matrix_C[index][jindex] = o_matrix_C[index][jindex]
-                                            + i_matrix_A[kindex][index]
-                                            * i_matrix_B[kindex][jindex];
+				o_matrix_C[index * i_rows + jindex] = o_matrix_C[index * i_rows + jindex]
+                                            + i_matrix_A[kindex * i_rows + index]
+                                            * i_matrix_B[kindex * i_rows + jindex];
 			}
 		}
     }
@@ -257,17 +259,17 @@ void matrix_T_multiply_matrix(element_t i_matrix_A[][], element_t i_matrix_B[][]
  * Output: 
  *  o_matrix_C: a matrix C=A*B size i_rows x i_columns
  */
-void matrix_multiply_matrix(element_t i_matrix_A[][], element_t i_matrix_B[][],
-                            size_t i_rows, size_t i_middle, size_t i_columns
-                            element_t o_matrix_C[][]) {
+void matrix_multiply_matrix(element_t *i_matrix_A, element_t *i_matrix_B,
+                            size_t i_rows, size_t i_middle, size_t i_columns,
+                            element_t *o_matrix_C) {
 	size_t index, jindex, kindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-			o_matrix_C[index][jindex] = 0;
+			o_matrix_C[index * i_columns + jindex] = 0;
 			for (kindex = 0; kindex < i_middle; kindex++) {
-				o_matrix_C[index][jindex] = o_matrix_C[index][jindex]
-                                            + i_matrix_A[index][kindex]
-                                            * i_matrix_B[kindex][jindex];
+				o_matrix_C[index * i_columns + jindex] = o_matrix_C[index * i_columns + jindex]
+                                            + i_matrix_A[index * i_middle + kindex]
+                                            * i_matrix_B[kindex * i_columns + jindex];
 			}
 		}
     }
@@ -285,11 +287,11 @@ void matrix_multiply_matrix(element_t i_matrix_A[][], element_t i_matrix_B[][],
  */
 void vector_multiply_vector_T(element_t i_vector_A[], element_t i_vector_B[],
                               size_t i_rows, size_t i_columns,
-                              element_t o_matrix_C[][]) {
+                              element_t *o_matrix_C) {
 	size_t index, jindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-			o_matrix_C[index][jindex] = i_vector_A[index] * i_vector_B[jindex];
+			o_matrix_C[index * i_rows + jindex] = i_vector_A[index] * i_vector_B[jindex];
 		}
     }
 }
@@ -307,7 +309,7 @@ void vector_T_multiply_vector(element_t i_vector_A[], element_t i_vector_B[],
                               size_t i_length, element_t *o_C) {
     size_t index;
     *o_C = 0;
-    for(index = 0; index < i_length: index++) {
+    for(index = 0; index < i_length; index++) {
         *o_C = *o_C + i_vector_A[index] * i_vector_B[index];
     }
 }
@@ -322,14 +324,14 @@ void vector_T_multiply_vector(element_t i_vector_A[], element_t i_vector_B[],
  * Output: 
  *  o_matrix_C: a matrix C=A.*B size i_rows x i_columns
  */
-void matrix_multiply_elementwise(element_t i_matrix_A[][], element_t i_matrix_B[][],
+void matrix_multiply_elementwise(element_t *i_matrix_A, element_t *i_matrix_B,
                                  size_t i_rows, size_t i_columns,
-                                 element_t o_matrix_C[][]) {
+                                 element_t *o_matrix_C) {
 	size_t index, jindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-            o_matrix_C[index][jindex] = i_matrix_A[index][jindex]
-                                        * i_matrix_B[index][jindex];
+            o_matrix_C[index * i_rows + jindex] = i_matrix_A[index * i_rows + jindex]
+                                        * i_matrix_B[index * i_rows + jindex];
 		}
     }
 }
@@ -344,14 +346,14 @@ void matrix_multiply_elementwise(element_t i_matrix_A[][], element_t i_matrix_B[
  * Output: 
  *  o_matrix_C: a matrix C=A+B size i_rows x i_columns
  */
-void matrix_sum(element_t i_matrix_A[][], element_t i_matrix_B[][],
+void matrix_sum(element_t *i_matrix_A, element_t *i_matrix_B,
                 size_t i_rows, size_t i_columns,
-                element_t o_matrix_C[][]) {
+                element_t *o_matrix_C) {
 	size_t index, jindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-            o_matrix_C[index][jindex] = i_matrix_A[index][jindex]
-                                        + i_matrix_B[index][jindex];
+            o_matrix_C[index * i_rows + jindex] = i_matrix_A[index * i_rows + jindex]
+                                        + i_matrix_B[index * i_rows + jindex];
 		}
     }
 }
@@ -365,21 +367,21 @@ void matrix_sum(element_t i_matrix_A[][], element_t i_matrix_B[][],
  * Output: 
  *  o_matrix_B: a matrix B=f(A) size i_rows x i_columns
  */
-void matrix_sigmoid(element_t i_matrix_A[][],
+void matrix_sigmoid(element_t *i_matrix_A,
                     size_t i_rows, size_t i_columns,
-                    element_t o_matrix_B[][]) {
+                    element_t *o_matrix_B) {
 	size_t index, jindex;
     element_t e_x;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-            if(i_matrix_A[index][jindex] >= 0) {
+            if(i_matrix_A[index * i_rows + jindex] >= 0) {
                 e_x = number_exponential(EXPONENTIAL_PRECISION,
-                                         i_matrix_A[index][jindex]);
-                o_matrix_B[index][jindex] = e_x / (e_x + 1);
+                                         i_matrix_A[index * i_rows]);
+                o_matrix_B[index * i_rows + jindex] = e_x / (e_x + 1);
             } else {
                 e_x = number_exponential(EXPONENTIAL_PRECISION,
-                                         -1*i_matrix_A[index][jindex]);
-                o_matrix_B[index][jindex] = 1 / (1 + e_x);
+                                         -1*i_matrix_A[index * i_rows + jindex]);
+                o_matrix_B[index * i_rows + jindex] = 1 / (1 + e_x);
             }
 		}
     }
@@ -394,13 +396,13 @@ void matrix_sigmoid(element_t i_matrix_A[][],
  * Output: 
  *  o_matrix_B: a matrix B=g(A) size i_rows x i_columns
  */
-void matrix_sigmoid_derivate(element_t i_matrix_A[][],
+void matrix_sigmoid_derivate(element_t **i_matrix_A,
                     size_t i_rows, size_t i_columns,
-                    element_t o_matrix_B[][]) {
+                    element_t **o_matrix_B) {
 	size_t index, jindex;
 	for (index = 0; index < i_rows; index++) {
 		for (jindex = 0; jindex < i_columns; jindex++) {
-            o_matrix_C[index][jindex] = i_matrix_A[index][jindex]
+            o_matrix_B[index][jindex] = i_matrix_A[index][jindex]
                                         * (1 - i_matrix_A[index][jindex]);
 		}
     }
@@ -416,15 +418,15 @@ void matrix_sigmoid_derivate(element_t i_matrix_A[][],
  * Output: 
  *  o_matrix_C: a matrix C=A.T*B size 1 x i_columns
  */
-void vector_T_multiply_matrix(element_t i_vector_A[], element_t i_matrix_B[][],
+void vector_T_multiply_matrix(element_t i_vector_A[], element_t *i_matrix_B,
                               size_t i_rows, size_t i_columns,
                               element_t o_vector_C[]) {
     size_t index, jindex;
     for(index = 0; index < i_columns; index++) {
-        output[index] = 0;
+        o_vector_C[index] = 0;
         for(jindex = 0; jindex < i_rows; jindex++) {
             o_vector_C[index] = o_vector_C[index]
-                                + i_vector_A[jindex] * i_matrix_B[jindex][index];
+                                + i_vector_A[jindex] * (*(i_matrix_B + jindex * i_columns + index));
         }
     }
 }
@@ -447,8 +449,8 @@ void vector_T_multiply_matrix(element_t i_vector_A[], element_t i_matrix_B[][],
 *  o_matrix_U: a matrix i_size x i_size
 * A=L*U
 */
-size_t matrix_crout_decomposition(element_t i_matrix_A[][], size_t i_size,
-                                  real_t o_matrix_L[][], real_t o_matrix_U[][]) {
+size_t matrix_crout_decomposition(element_t *i_matrix_A, size_t i_size,
+                                  real_t *o_matrix_L, real_t *o_matrix_U) {
 
     size_t index, jindex, kindex;
     real_t sum;
@@ -456,34 +458,34 @@ size_t matrix_crout_decomposition(element_t i_matrix_A[][], size_t i_size,
     //initialise matrix
 	for (index = 0; index < i_size; index++) {
 	    for (jindex = 0; jindex < i_size; jindex++) {
-		    o_matrix_U[index][jindex] = 0;
-		    o_matrix_L[index][jindex] = 0;
+		    o_matrix_U[index * i_size + jindex] = 0;
+		    o_matrix_L[index * i_size + jindex] = 0;
         }
 	}
 
     //initialise diagnogal for U
 	for (index = 0; index < i_size; index++) {
-		o_matrix_U[index][index] = 1;
+		o_matrix_U[index * i_size + index] = 1;
 	}
 
 	for (jindex = 0; jindex < i_size; jindex++) {
 		for (index = jindex; index < i_size; index++) {
 			sum = 0;
 			for (kindex = 0; kindex < jindex; kindex++) {
-				sum = sum + o_matrix_L[index][kindex] * o_matrix_U[kindex][jindex];	
+				sum = sum + o_matrix_L[index * i_size + kindex] * o_matrix_U[kindex * i_size + jindex];	
 			}
-			o_matrix_L[index][jindex] = i_matrix_A[index][jindex] - sum;
+			o_matrix_L[index * i_size + jindex] = i_matrix_A[index * i_size + jindex] - sum;
 		}
 
 		for (index = jindex; index < i_size; index++) {
 			sum = 0;
 			for(kindex = 0; kindex < jindex; kindex++) {
-				sum = sum + o_matrix_L[jindex][kindex] * o_matrix_U[kindex][index];
+				sum = sum + o_matrix_L[jindex * i_size + kindex] * o_matrix_U[kindex * i_size + index];
 			}
-			if (o_matrix_L[jindex][jindex] == 0) {
+			if (o_matrix_L[jindex * i_size + jindex] == 0) {
 				return -1;
 			}
-			o_matrix_U[jindex][index] = (i_matrix_A[jindex][index] - sum) / o_matrix_L[jindex][jindex];
+			o_matrix_U[jindex * i_size + index] = (i_matrix_A[jindex * i_size + index] - sum) / o_matrix_L[jindex * i_size + jindex];
 		}
 	}
 
@@ -503,9 +505,10 @@ size_t matrix_crout_decomposition(element_t i_matrix_A[][], size_t i_size,
 *  o_matrix_U: a matrix i_size x i_size
 * A=L*U
 */
-size_t matrix_doolittle_decomposition(element_t i_matrix_A[][], size_t i_size,
-                                      real_t o_matrix_L[][], real_t o_matrix_U[][])
+size_t matrix_doolittle_decomposition(element_t *i_matrix_A, size_t i_size,
+                                      real_t *o_matrix_L, real_t *o_matrix_U)
 { 
+    int n = i_size;
     int lower[n][n], upper[n][n]; 
     memset(lower, 0, sizeof(lower)); 
     memset(upper, 0, sizeof(upper)); 
@@ -515,8 +518,8 @@ size_t matrix_doolittle_decomposition(element_t i_matrix_A[][], size_t i_size,
     //initialise matrix
 	for (index = 0; index < i_size; index++) {
 	    for (jindex = 0; jindex < i_size; jindex++) {
-		    o_matrix_U[index][jindex] = 0;
-		    o_matrix_L[index][jindex] = 0;
+		    o_matrix_U[index * i_size + jindex] = 0;
+		    o_matrix_L[index * i_size + jindex] = 0;
         }
 	}
 
@@ -524,23 +527,23 @@ size_t matrix_doolittle_decomposition(element_t i_matrix_A[][], size_t i_size,
 		for (index = jindex; index < i_size; index++) {
 			sum = 0;
 			for (kindex = 0; kindex < jindex; kindex++) {
-				sum = sum + o_matrix_L[jindex][kindex] * o_matrix_U[kindex][index];	
+				sum = sum + o_matrix_L[jindex * i_size + kindex] * o_matrix_U[kindex * i_size + index];	
 			}
-			o_matrix_U[jindex][index] = i_matrix_A[jindex][index] - sum;
+			o_matrix_U[jindex * i_size + index] = i_matrix_A[jindex * i_size + index] - sum;
 		}
 
 		for (index = jindex; index < i_size; index++) {
             if(index == jindex) {
-                o_matrix_L[jindex][jindex] = 1;
+                o_matrix_L[jindex * i_size + jindex] = 1;
             }
 			sum = 0;
 			for(kindex = 0; kindex < jindex; kindex++) {
-				sum = sum + o_matrix_L[index][kindex] * o_matrix_U[kindex][jindex];
+				sum = sum + o_matrix_L[index * i_size + kindex] * o_matrix_U[kindex * i_size + jindex];
 			}
-			if (o_matrix_U[jindex][jindex] == 0) {
+			if (o_matrix_U[jindex * i_size + jindex] == 0) {
 				return -1;
 			}
-			o_matrix_L[index][jindex] = (i_matrix_A[index][jindex] - sum) / o_matrix_U[jindex][jindex];
+			o_matrix_L[index * i_size + jindex] = (i_matrix_A[index * i_size + jindex] - sum) / o_matrix_U[jindex * i_size + jindex];
 		}
 	}
 }
@@ -558,8 +561,8 @@ size_t matrix_doolittle_decomposition(element_t i_matrix_A[][], size_t i_size,
 * A=L*U
 * det(A)=det(L)*det(U), det(U) = 1 => det(A)=det(L)
 */
-element_t matrix_determinant(element_t i_matrix_A[][], size_t i_size,
-                             real_t o_matrix_L[][], real_t o_matrix_U[][],
+element_t matrix_determinant(element_t *i_matrix_A, size_t i_size,
+                             real_t *o_matrix_L, real_t *o_matrix_U,
                              element_t *o_determinant) {
     size_t return_value;
     return_value = matrix_crout_decomposition(i_matrix_A, i_size,
@@ -570,7 +573,7 @@ element_t matrix_determinant(element_t i_matrix_A[][], size_t i_size,
     *o_determinant = 1;
     size_t index;
 	for (index = 0; index < i_size; index++) {
-		*o_determinant = *o_determinant * o_matrix_L[index][index];
+		*o_determinant = *o_determinant * o_matrix_L[index * i_size + index];
 	}
     return 0;
 }
@@ -586,15 +589,15 @@ element_t matrix_determinant(element_t i_matrix_A[][], size_t i_size,
 *  o_matrix_B: a matrix (i_size-1) x (i_size-1)
 * B is A without the given row and column
 */
-void matrix_cofactor(element_t i_matrix_A[][], size_t i_size,
-                     size_t i_row, size_t i_column, element_t o_matrix_B[][]) {
+void matrix_cofactor(element_t *i_matrix_A, size_t i_size,
+                     size_t i_row, size_t i_column, element_t *o_matrix_B) {
     size_t index, jindex, rindex, pindex;
     rindex = 0;
     pindex = 0;
     for(index = 0; index < i_size; index++) {
         for(jindex = 0; jindex < i_size; jindex++) {
             if(index != i_row && jindex != i_column) {
-                o_matrix_B[rindex][pindex] = i_matrix_A[index][jindex];
+                o_matrix_B[rindex * i_size + pindex] = i_matrix_A[index * i_size + jindex];
                 pindex = pindex + 1;
                 if(pindex == (i_size-1)) {
                     pindex = 0;
@@ -615,16 +618,16 @@ void matrix_cofactor(element_t i_matrix_A[][], size_t i_size,
 * Output: 
 *  o_matrix_B: a matrix i_size x i_size B=A^* =adj(A)
 */
-size_t matrix_adjoint(element_t i_matrix_A[][], size_t i_size,
-                      element_t i_matrix_aux1[][], real_t i_matrix_aux2[][],
-                      real_t i_matrix_aux3[][], element_t o_matrix_B[][]) {
+size_t matrix_adjoint(element_t *i_matrix_A, size_t i_size,
+                      element_t *i_matrix_aux1, real_t *i_matrix_aux2,
+                      real_t *i_matrix_aux3, element_t *o_matrix_B) {
     size_t sign = 1;
     size_t index, jindex;
     size_t return_value;
     element_t determinant;
 
     for(index = 0; index < i_size; index++) {
-        for(jindex = 0; jindex > i_size; jindex) {
+        for(jindex = 0; jindex > i_size; jindex++) {
             matrix_cofactor(i_matrix_A, i_size, index, jindex, i_matrix_aux1);
             sign = ((index+jindex)%2==0)? 1: -1;
             return_value = matrix_determinant(i_matrix_aux1, i_size - 1, i_matrix_aux2,
@@ -632,7 +635,7 @@ size_t matrix_adjoint(element_t i_matrix_A[][], size_t i_size,
             if(return_value != 0) {
                 return return_value;
             }
-            o_matrix_B[index][jindex] = sign * determinant;
+            o_matrix_B[index * i_size + jindex] = sign * determinant;
         }
     }
     return 0;
@@ -649,9 +652,9 @@ size_t matrix_adjoint(element_t i_matrix_A[][], size_t i_size,
 * Output: 
 *  o_matrix_B: a matrix i_size x i_size B=A^-1
 */
-size_t matrix_inverse(element_t i_matrix_A[][], size_t i_size,
-                      element_t i_matrix_aux1[][], real_t i_matrix_aux2[][],
-                      real_t i_matrix_aux3[][], element_t o_matrix_B[][]) {
+size_t matrix_inverse(element_t *i_matrix_A, size_t i_size,
+                      element_t *i_matrix_aux1, real_t *i_matrix_aux2,
+                      real_t *i_matrix_aux3, element_t *o_matrix_B) {
     size_t index, jindex;
     size_t return_value;
     element_t determinant;
@@ -673,8 +676,8 @@ size_t matrix_inverse(element_t i_matrix_A[][], size_t i_size,
 
 
     for(index = 0; index < i_size; index++) {
-        for(jindex = 0; jindex > i_size; jindex) {
-            o_matrix_B[index][jindex] = o_matrix_B[index][jindex] / determinant;
+        for(jindex = 0; jindex > i_size; jindex++) {
+            o_matrix_B[index * i_size + jindex] = o_matrix_B[index * i_size + jindex] / determinant;
         }
     }
 

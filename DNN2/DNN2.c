@@ -14,18 +14,18 @@
 #define MAX_ITERATIONS 40
 #define WEIGHTS_L0_LENGTH 3
 
-element_t g_weights_l0[INPUT_LENGTH][WEIGHTS_LO_LENGTH];
-element_t g_weights_l0_delta[INPUT_LENGTH][WEIGHTS_LO_LENGTH];
-element_t g_weights_l1[WEIGHTS_LO_LENGTH];
-element_t g_weights_l1_delta[WEIGHTS_LO_LENGTH];
-element_t g_l1[TRAINING_DATA_LENGTH][WEIGHTS_LO_LENGTH];
-element_t g_l1_delta[TRAINING_DATA_LENGTH][WEIGHTS_LO_LENGTH];
-element_t g_l1_error[TRAINING_DATA_LENGTH][WEIGHTS_LO_LENGTH];
+element_t g_weights_l0[INPUT_LENGTH][WEIGHTS_L0_LENGTH];
+element_t g_weights_l0_delta[INPUT_LENGTH][WEIGHTS_L0_LENGTH];
+element_t g_weights_l1[WEIGHTS_L0_LENGTH];
+element_t g_weights_l1_delta[WEIGHTS_L0_LENGTH];
+element_t g_l1[TRAINING_DATA_LENGTH][WEIGHTS_L0_LENGTH];
+element_t g_l1_delta[TRAINING_DATA_LENGTH][WEIGHTS_L0_LENGTH];
+element_t g_l1_error[TRAINING_DATA_LENGTH][WEIGHTS_L0_LENGTH];
 element_t g_l2[TRAINING_DATA_LENGTH];
 element_t g_l2_error[TRAINING_DATA_LENGTH];
 element_t g_l2_delta[TRAINING_DATA_LENGTH];
 
-void initialise_dnn_2(element_t weights_l0[][], element_t weights_l1[],
+void initialise_dnn_2(element_t weights_l0[][WEIGHTS_L0_LENGTH], element_t weights_l1[],
                       size_t input_length, size_t weights_l0_length) {
     size_t index, jindex;
     for(index = 0; index < weights_l0_length; index++) {
@@ -44,16 +44,16 @@ void initialise_dnn_2(element_t weights_l0[][], element_t weights_l1[],
 * l1 = f(training_data_X x weights_l0)
 * l2 = l1 x weights_l1
 */
-void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
+void training_dnn_2(element_t training_data_X[][INPUT_LENGTH], element_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     size_t max_iterations,
-                    element_t weights_l0[][], element_t weights_l1[],
+                    element_t weights_l0[][WEIGHTS_L0_LENGTH], element_t weights_l1[],
                     size_t weights_l0_length,
-                    element_t l1[][], element_t l1_error[][],
-                    element_t l1_delta[][],
+                    element_t l1[][WEIGHTS_L0_LENGTH], element_t l1_error[][WEIGHTS_L0_LENGTH],
+                    element_t l1_delta[][WEIGHTS_L0_LENGTH],
                     element_t l2[], element_t l2_error[],
                     element_t l2_delta[],
-                    element_t weights_l0_delta[][], element_t weights_l1_delta[]) {
+                    element_t weights_l0_delta[][WEIGHTS_L0_LENGTH], element_t weights_l1_delta[]) {
     size_t index;
     for (index = 0; index < max_iterations; index++) {
         //l1 = nonlin(np.dot(l0,syn0))
@@ -63,14 +63,14 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         * l1 training_data_length x weights_l0_length
         * l1 = training_data_X x weights_l0
         */
-        matrix_multiply_matrix(training_data_X, weights_l0, training_data_length,
-                               input_length, weights_l0_length, l1);
+        matrix_multiply_matrix(&training_data_X[0][0], &weights_l0[0][0], training_data_length,
+                               input_length, weights_l0_length, &l1[0][0]);
         /*
         * l1 training_data_X x weights_l0_length
         * f sigmoid function f(x) = 1/(1 + e^-x)
         * l1 = f(l1)
         */
-        matrix_sigmoid(l1, training_data_length, weights_l0_length, l1);
+        matrix_sigmoid(&l1[0][0], training_data_length, weights_l0_length, &l1[0][0]);
 
         //l2 = nonlin(np.dot(l1,syn1))
         /*
@@ -79,7 +79,7 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         * l2 training_data_length x 1
         * l2 = l1 x weights_l1
         */
-        matrix_multiply_vector(l1, training_data_length, weights_l0_length,
+        matrix_multiply_vector(&l1[0][0], training_data_length, weights_l0_length,
                                weights_l1, l2);
         /*
         * l2 training_data_length x 1
@@ -125,7 +125,7 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         */
         vector_multiply_vector_T(l2_delta, weights_l1,
                                  training_data_length, weights_l0_length,
-                                 l1_error);
+                                 &l1_error[0][0]);
 
 
         //l1_delta = l1_error * nonlin(l1,deriv=True)
@@ -135,16 +135,16 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         * l1_delta training_data_length x weights_l0_length
         * l1_delta = f(l1)
         */        
-        matrix_sigmoid(l1, training_data_length,
-                       weights_l0_length, l1_delta);
+        matrix_sigmoid(&l1[0][0], training_data_length,
+                       weights_l0_length, &l1_delta[0][0]);
         /*
         * l1_error training_data_length x weights_l0_length
         * l1_delta training_data_length x weights_l0_length
         * l1_delta = l1_error .* l1_delta
         */
-        matrix_multiply_elementwise(l1_error, l1_delta,
+        matrix_multiply_elementwise(&l1_error[0][0], &l1_delta[0][0],
                                     training_data_length, weights_l0_length,
-                                    l1_delta);
+                                    &l1_delta[0][0]);
 
 
         //syn1 += l1.T.dot(l2_delta)
@@ -154,7 +154,7 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         * weights_l1_delta weights_l0_length x 1
         * weights_l1_delta = l1.T .* weights_l1_delta
         */        
-        matrix_T_multiply_vector(l1, training_data_length, weights_l0_length,
+        matrix_T_multiply_vector(&l1[0][0], training_data_length, weights_l0_length,
                                 l2_delta, weights_l1_delta);
         /*
         * weights_l1 weights_l0_length x 1
@@ -170,17 +170,17 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
         * weights_l0_delta input_length x weights_l0_length
         * weights_l0_delta = training_data_X.T x l1_delta
         */
-        matrix_T_multiply_matrix(training_data_X, l1_delta,
-                                 input_length, training_data_length, weights_l0_length
-                                 weights_l0_delta);
+        matrix_T_multiply_matrix(&training_data_X[0][0], &l1_delta[0][0],
+                                 input_length, training_data_length, weights_l0_length,
+                                 &weights_l0_delta[0][0]);
         /*
         * weights_l0 input_length x weights_l0_length
         * weights_l0_delta input_length x weights_l0_length
         * weights_l0 = weights_l0 + weights_l0_delta
         */
-        matrix_sum(weights_l0, weights_l0_delta,
+        matrix_sum(&weights_l0[0][0], &weights_l0_delta[0][0],
                    input_length, weights_l0_length,
-                   weights_l0);
+                   &weights_l0[0][0]);
     };
 }
 
@@ -188,7 +188,7 @@ void training_dnn_2(element_t training_data_X[][], element_t training_data_Y[],
 * classify test data with a dnn with 1 layer
 */
 element_t classify_dnn_2(element_t test_data[], size_t input_length,
-                         element_t weights_lo[][], element_t weights_l1[],
+                         element_t weights_l0[][WEIGHTS_L0_LENGTH], element_t weights_l1[],
                          element_t l1[],
                          size_t weights_l0_length) {
     //l1 = nonlin(np.dot(l0,syn0))
@@ -198,7 +198,7 @@ element_t classify_dnn_2(element_t test_data[], size_t input_length,
     * l1 1 x weights_l0_length
     * l1 = test_data.T x weights_l0
     */
-    vector_T_multiply_matrix(test_data, weights_l0,
+    vector_T_multiply_matrix(test_data, &weights_l0[0][0],
                              input_length, weights_l0_length,
                              l1);
     /*

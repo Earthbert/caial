@@ -21,9 +21,9 @@ element_t g_test_data_LR[INPUT_LENGTH+1];
 /*
 * Converts training data adding the first column only with value 1
 */
-void convert_LR(element_t training_data_X[][], element_t test_data[],
+void convert_LR(element_t training_data_X[][INPUT_LENGTH], element_t test_data[],
                 size_t training_data_length, size_t input_length,
-                element_t training_data_X_LR[][], element_t test_data_LR[]) {
+                element_t training_data_X_LR[][INPUT_LENGTH+1], element_t test_data_LR[]) {
     size_t index, jindex;
     for(index = 0; index < training_data_length; index++) {
         training_data_X_LR[index][0] = 1;
@@ -44,7 +44,7 @@ void convert_LR(element_t training_data_X[][], element_t test_data[],
 * Works on all type of data vs normal quation where X.T*X must be invertible
 * Train the linear regresion gausian descendet
 */
-void training_gd_LR(element_t training_data_X[][], element_t training_data_Y[]
+void training_gd_LR(element_t training_data_X[][INPUT_LENGTH+1], element_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     element_t theta[], size_t max_iterations,
                     element_t alpha, element_t h_theta[], element_t error[],
@@ -57,7 +57,7 @@ void training_gd_LR(element_t training_data_X[][], element_t training_data_Y[]
         * h_theta training_data_length x 1
         * h_theta = training_data_X x theta (same as theta x training_data_X.T)
         */
-        matrix_multiply_vector(training_data_X, training_data_length,
+        matrix_multiply_vector(&training_data_X[0][0], training_data_length,
                                input_length, theta, h_theta);
         /*
         * h_theta training_data_length x 1
@@ -73,7 +73,7 @@ void training_gd_LR(element_t training_data_X[][], element_t training_data_Y[]
         * delta 1 x input_length -> input_length x 1
         * delta = error.T * training_data_X
         */
-        vector_T_multiply_matrix(error, training_data_X, training_data_length,
+        vector_T_multiply_matrix(error, &training_data_X[0][0], training_data_length,
                                  input_length, delta);
         /*
         * delta input_length x 1
@@ -81,7 +81,7 @@ void training_gd_LR(element_t training_data_X[][], element_t training_data_Y[]
         */
         vector_multiply_scalar(delta, input_length,
                                alpha/training_data_length, delta);
-        difference(theta, delta, input_length, theta);
+        vector_difference(theta, delta, input_length, theta);
         /*
         * theta input_length x 1
         * delta input_length x 1
@@ -104,28 +104,28 @@ element_t g_aux5[INPUT_LENGTH+1][INPUT_LENGTH+1];
 * normal equation
 * theta = ((X.T*X)^-1) * X.T * y
 */
-size_t training_normal_LR(element_t training_data_X[][], element_t training_data_Y[],
+size_t training_normal_LR(element_t **training_data_X, element_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     element_t theta[],
-                    element_t inverse_matrix[][], element_t aux1[][],
-                    element_t aux2[],  element_t aux3[][],  element_t aux4[][],
-                    element_t aux5[][]) {
+                    element_t **inverse_matrix, element_t **aux1,
+                    element_t aux2[],  element_t **aux3,  element_t **aux4,
+                    element_t **aux5) {
     size_t return_value;
     /*
     * training_data_X training_data_length x input_length
     * aux1 input_length x input_length
     * aux1 = X.T*X
     */
-    matrix_T_multiply_matrix(training_data_X, training_data_X,
-                             input_length, training_data_length, input_length
-                             aux1);
+    matrix_T_multiply_matrix(&training_data_X[0][0], &training_data_X[0][0],
+                             input_length, training_data_length, input_length,
+                             &aux1[0][0]);
     /*
     * training_data_X training_data_length x input_length
     * training_data_Y training_data_length x 1
     * aux2 input_length x 1
     * aux2 = X.T*Y
     */
-    matrix_T_multiply_vector(training_data_X, training_data_length, input_length,
+    matrix_T_multiply_vector(&training_data_X[0][0], training_data_length, input_length,
                              training_data_Y, aux2);
     
 
@@ -137,8 +137,8 @@ size_t training_normal_LR(element_t training_data_X[][], element_t training_data
     * inverse_matrix input_length x input_length
     * inverse_matrix= aux^-1
     */
-    return_value = matrix_inverse(aux1, input_length,
-                                  aux3, aux4, aux5, inverse_matrix);
+    return_value = matrix_inverse(&aux1[0][0], input_length,
+                                  &aux3[0][0], &aux4[0][0], &aux5[0][0], &inverse_matrix[0][0]);
     if(return_value != 0) {
         return return_value;
     }
@@ -149,7 +149,7 @@ size_t training_normal_LR(element_t training_data_X[][], element_t training_data
     * theta input_length x 1
     * theta = inverse_matrix * aux2
     */
-    matrix_multiply_vector(inverse_matrix, input_length, input_length,
+    matrix_multiply_vector(&inverse_matrix[0][0], input_length, input_length,
                            aux2, theta);
 
 }
@@ -175,7 +175,7 @@ int main(void)
     convert_LR(g_training_data_X, g_test_data,
                TRAINING_DATA_LENGTH, INPUT_LENGTH,
                g_training_data_X_LR, g_test_data_LR);
-    training_gd_LR(g_training_data_X_LR, g_training_data_Y
+    training_gd_LR(g_training_data_X_LR, g_training_data_Y,
                    TRAINING_DATA_LENGTH, INPUT_LENGTH+1,
                    g_theta, MAX_ITERATIONS,
                    g_alpha, g_h_theta, g_error,

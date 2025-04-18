@@ -13,8 +13,8 @@
 
 //
 size_t g_tree_atribute_index[INPUT_LENGTH_SQUARE];
-element_t g_tree_atribute_value[INPUT_LENGTH_SQUARE];
-element_t g_tree_class[INPUT_LENGTH_SQUARE];
+size_t g_tree_atribute_value[INPUT_LENGTH_SQUARE];
+size_t g_tree_class[INPUT_LENGTH_SQUARE];
 size_t g_tree_atributes_remained[INPUT_LENGTH_SQUARE][INPUT_LENGTH];
 size_t g_count_values[OUTPUT_GROUPS_LENGTH];
 size_t g_training_data_Y_CT[TRAINING_DATA_LENGTH];
@@ -50,14 +50,14 @@ void convert_to_CT(element_t training_data_Y[], size_t training_data_length,
     }
 
     for(jindex = 0; jindex < training_data_length; jindex++) {
-        training_data_Y_BNB[jindex] = output_groups_length - 1;
+        training_data_Y_CT[jindex] = output_groups_length - 1;
     }
 
     for(kindex = output_groups_length - 2; kindex > -1; kindex--) {
         value = min + ((max - min) * (kindex+1)) / output_groups_length;
         for(jindex = 0; jindex < training_data_length; jindex++) {
             if(training_data_Y[jindex] <= value) {
-                training_data_Y_BNB[jindex] = kindex;
+                training_data_Y_CT[jindex] = kindex;
             }
         }
     }
@@ -82,11 +82,11 @@ void convert_to_CT(element_t training_data_Y[], size_t training_data_length,
 * count_values - use for counting how many times a value from the training data Y is in a subpart. 
 *                Size is output_groups_length
 */
-void creating_tree(size_t index, element_t training_data_X[][], size_t training_data_length,
-                   size_t input_length, size_t training_data_Y[], size_t tree_atributes_remained[][],
+void creating_tree(size_t index, element_t training_data_X[][INPUT_LENGTH], size_t training_data_length,
+                   size_t input_length, size_t training_data_Y[], size_t tree_atributes_remained[][INPUT_LENGTH],
                    size_t output_groups_length, size_t tree_atribute_index[], size_t tree_atribute_value[],
                    size_t tree_class[], size_t training_position_tree[], size_t count_values[]) {
-    size_t jindex, kinex, rindex;
+    size_t jindex, kindex, rindex;
 
     /*
     * If it is only on value on the training point for this node
@@ -132,9 +132,9 @@ void creating_tree(size_t index, element_t training_data_X[][], size_t training_
         for(jindex = 0; jindex < training_data_length; jindex++) {
             if(training_position_tree[jindex] == index) {
                 current_frequency = 1;
-                for(rindex = jidnex + 1; rindex < training_data_length; rindex++) {
+                for(rindex = jindex + 1; rindex < training_data_length; rindex++) {
                     if(training_position_tree[rindex] == index) {
-                        if(training_data_Y[jidnex] == training_data_Y[index]) {
+                        if(training_data_Y[jindex] == training_data_Y[index]) {
                             current_frequency = current_frequency + 1;
                         }
                     }
@@ -168,7 +168,7 @@ void creating_tree(size_t index, element_t training_data_X[][], size_t training_
             * calculate the mean for that atribute with the training data
             * for this node. Also count how many training data points are
             */
-            for(jindex = 0; jidenx < training_data_length; jindex++) {
+            for(jindex = 0; jindex < training_data_length; jindex++) {
                 if(training_position_tree[jindex] == index) {
                     mean = mean + training_data_X[jindex][rindex];
                     total_elements = total_elements + 1;
@@ -196,7 +196,7 @@ void creating_tree(size_t index, element_t training_data_X[][], size_t training_
             for(kindex = 0; kindex < output_groups_length; kindex++) {
                 count_values[kindex] = 0;
             }
-            for(jindex = 0; jidenx < training_data_length; jindex++) {
+            for(jindex = 0; jindex < training_data_length; jindex++) {
                 if(training_position_tree[jindex] == index) {
                     if(training_data_X[jindex][rindex] >= mean) {
                         current_count = current_count + 1;
@@ -213,7 +213,7 @@ void creating_tree(size_t index, element_t training_data_X[][], size_t training_
             for(kindex = 0; kindex < output_groups_length; kindex++) {
                 count_values[kindex] = 0;
             }
-            for(jindex = 0; jidenx < training_data_length; jindex++) {
+            for(jindex = 0; jindex < training_data_length; jindex++) {
                 if(training_position_tree[jindex] == index) {
                     if(training_data_X[jindex][rindex] < mean) {
                         current_count = current_count + 1;
@@ -249,7 +249,7 @@ void creating_tree(size_t index, element_t training_data_X[][], size_t training_
     tree_atributes_remained[2*index+2][current_kindex] = 0;
 
     // transmiting the data to the sons
-    for(jindex = 0; jidenx < training_data_length; jindex++) {
+    for(jindex = 0; jindex < training_data_length; jindex++) {
         if(training_position_tree[jindex] == index) {
             if(training_data_X[jindex][current_kindex] >= mean) {
                 training_position_tree[jindex] = 2*index + 2;
@@ -299,7 +299,7 @@ int main(void)
 {   
     convert_to_CT(g_training_data_Y, TRAINING_DATA_LENGTH,
                   g_training_data_Y_CT, OUTPUT_GROUPS_LENGTH); 
-    creating_tree(0, g_training_data_X, g_training_data_length,
+    creating_tree(0, g_training_data_X, TRAINING_DATA_LENGTH,
                   INPUT_LENGTH, g_training_data_Y_CT, g_tree_atributes_remained,
                   OUTPUT_GROUPS_LENGTH, g_tree_atribute_index, g_tree_atribute_value,
                   g_tree_class, g_training_position_tree, g_count_values);

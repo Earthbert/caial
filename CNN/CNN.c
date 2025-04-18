@@ -3,6 +3,7 @@
 // https://www.geeksforgeeks.org/program-to-efficiently-calculate-ex/
 // Ciocirlan Stefan-Dan 17.05.2019
 
+#include <math.h>
 #include <stdlib.h>
 #include "util.h"
 #include "../common/common.h"
@@ -11,11 +12,14 @@
 #define MAX_ITERATIONS 40
 
 
-element_t g_input_layer[290400] // 55x55x96
-element_t g_conv_output[3025] // 55x55
-element_t g_output_layer[290400] // 55x55x96
-element_t g_kernel[9216] //6x6x256
+element_t g_input_layer[290400]; // 55x55x96
+element_t g_conv_output[3025]; // 55x55
+element_t g_output_layer[290400]; // 55x55x96
+element_t g_kernel[9216]; //6x6x256
 
+size_t max(size_t a, size_t b) {
+    return (a > b) ? a : b;
+}
 
 void convolution_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
                     size_t i_start_depth, size_t i_end_depth, size_t i_total_depth,
@@ -58,10 +62,10 @@ void convolution_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
                             if( matrix_column < i_padding[2] || matrix_column >= i_columns + i_padding[2]) {
                                 sum = sum + 0;
                             } else {
-                                matrix_row = matrix_row - padding[0];
-                                matrix_column = matrix_column - padding[2];
+                                matrix_row = matrix_row - i_padding[0];
+                                matrix_column = matrix_column - i_padding[2];
                                 sum = sum + (*(i_matrix_A + matrix_row * i_columns + matrix_column * i_total_depth + kindex))
-                                      *  (*(i_kernel_B + rindex * kernel_size + pindex * (i_end_depth-i_start_depth) + kindex));
+                                      *  (*(i_kernel_B + rindex * i_kernel_size + pindex * (i_end_depth-i_start_depth) + kindex));
                             }
                         }
                     }
@@ -111,8 +115,8 @@ void convolution_2D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
                         if( matrix_column < i_padding[2] || matrix_column >= i_columns + i_padding[2]) {
                             sum = sum + 0;
                         } else {
-                            matrix_row = matrix_row - padding[0];
-                            matrix_column = matrix_column - padding[2];
+                            matrix_row = matrix_row - i_padding[0];
+                            matrix_column = matrix_column - i_padding[2];
                             sum = sum + (*(i_matrix_A + matrix_row * i_columns + matrix_column))
                                     * (*(i_kernel_B + rindex * i_kernel_size + pindex));
                         }
@@ -128,9 +132,9 @@ void ReLU_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size_t i_de
              element_t *o_matrix_B) {
     size_t index, jindex, kindex;
     for(index = 0; index < i_rows; index++) {
-        for(jidnex = 0; jindex < i_columns; jindex++) {
+        for(jindex = 0; jindex < i_columns; jindex++) {
             for(kindex = 0; kindex < i_depth; kindex++) {
-                if(i_matrix_A[index][jindex][kindex] < 0) {
+                if(*(i_matrix_A + index * i_columns + jindex * i_depth + kindex) < 0) {
                     *(o_matrix_B + index * i_columns + jindex * i_depth + kindex) = 0;
                 } else {
                     *(o_matrix_B + index * i_columns + jindex * i_depth + kindex)
@@ -147,8 +151,8 @@ void ReLU_2D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
              element_t *o_matrix_B) {
     size_t index, jindex;
     for(index = 0; index < i_rows; index++) {
-        for(jidnex = 0; jindex < i_columns; jindex++) {
-            if(i_matrix_A[index][jindex] < 0) {
+        for(jindex = 0; jindex < i_columns; jindex++) {
+            if(*(i_matrix_A+ index * i_columns + jindex) < 0) {
                 *(o_matrix_B + index * i_columns + jindex) = 0;
             } else {
                 *(o_matrix_B + index * i_columns + jindex)
@@ -168,7 +172,7 @@ void max_pooling_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size
     element_t max;
     size_t padding;
     if(i_padding_type == 1) {
-        padding = (i_kernel_size - 1) / 2;
+        padding = ( - 1) / 2;
     } else {
         padding = 0;
     }
@@ -178,8 +182,8 @@ void max_pooling_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size
         for(jindex = 0; jindex < *o_columns; jindex++) {
             for(kindex = 0; kindex < i_depth; kindex++) {
                 max = -1; // because it does'n have negative numbers
-                for(rindex = 0; rindex < i_kernel_size; rindex++) {
-                    for(pindex = 0; pindex < i_kernel_size; pindex++) {
+                for(rindex = 0; rindex < i_filter_row; rindex++) {
+                    for(pindex = 0; pindex < i_columns; pindex++) {
                         matrix_row = index * i_stride_row + rindex;
                         matrix_column = jindex * i_stride_column + pindex;
                         if( matrix_row < padding || matrix_row >= i_rows + padding) {
@@ -213,7 +217,7 @@ void max_pooling_2D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
     size_t matrix_row, matrix_column;
     size_t padding;
     if(i_padding_type == 1) {
-        padding = (i_kernel_size - 1) / 2;
+        padding = (max(i_filter_row, i_filter_column) - 1) / 2;
     } else {
         padding = 0;
     }
@@ -221,9 +225,9 @@ void max_pooling_2D(element_t *i_matrix_A, size_t i_rows, size_t i_columns,
     *o_columns = (i_columns + 2 * padding - i_filter_column) / i_stride_column + 1;
     for(index = 0; index < *o_rows; index++) {
         for(jindex = 0; jindex < *o_columns; jindex++) {
-            max = -1; // because it does'n have negative numbers
-            for(rindex = 0; rindex < i_kernel_size; rindex++) {
-                for(pindex = 0; pindex < i_kernel_size; pindex++) {
+            element_t max = -1; // because it does'n have negative numbers
+            for(rindex = 0; rindex < i_filter_row; rindex++) {
+                for(pindex = 0; pindex < i_filter_column; pindex++) {
                     matrix_row = index * i_stride_row + rindex;
                     matrix_column = jindex * i_stride_column + pindex;
                     if( matrix_row < padding || matrix_row >= i_rows + padding) {
@@ -282,14 +286,14 @@ void softmax(element_t i_vector_A[], size_t i_length,
 void avg_pooling_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size_t i_depth,
                 size_t i_filter_row, size_t i_filter_column,
                 size_t i_stride_row, size_t i_stride_column,
-                size_t padding_type,
+                size_t i_padding_type,
                 element_t *o_matrix_B, size_t *o_rows, size_t *o_columns) {
     size_t index, jindex, kindex, rindex, pindex;
     size_t matrix_row, matrix_column;
     element_t avg;
     size_t padding;
     if(i_padding_type == 1) {
-        padding = (i_kernel_size - 1) / 2;
+        padding = (max(i_filter_row, i_filter_column) - 1) / 2;
     } else {
         padding = 0;
     }
@@ -299,8 +303,8 @@ void avg_pooling_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size
         for(jindex = 0; jindex < *o_columns; jindex++) {
             for(kindex = 0; kindex < i_depth; kindex++) {
                 avg = 0; // because it does'n have negative numbers
-                for(rindex = 0; rindex < i_kernel_size; rindex++) {
-                    for(pindex = 0; pindex < i_kernel_size; pindex++) {
+                for(rindex = 0; rindex < i_filter_row; rindex++) {
+                    for(pindex = 0; pindex < i_filter_column; pindex++) {
                         matrix_row = index * i_stride_row + rindex;
                         matrix_column = jindex * i_stride_column + pindex;
                         if( matrix_row < padding || matrix_row >= i_rows + padding) {
@@ -316,7 +320,7 @@ void avg_pooling_3D(element_t *i_matrix_A, size_t i_rows, size_t i_columns, size
                         }
                     }
                 }
-                *(o_matrix_B + index * (*o_columns) + jindex * i_depth + kindex) = avg / (i_kernel_size * i_kernel_size);
+                *(o_matrix_B + index * (*o_columns) + jindex * i_depth + kindex) = avg / (i_filter_row * i_filter_column);
             }
         }
     }
@@ -802,11 +806,11 @@ size_t rosnet_simulation_classifier(element_t *i_input_data, size_t i_rows,
         columns = aux_columns;
         //addition
         for(index = 0; index < rows; index++) {
-            for(jidnex = 0; jindex < columns; jindex++) {
+            for(jindex = 0; jindex < columns; jindex++) {
                 for(kindex = 0; kindex < current_depth; kindex++) {
                     *(o_output_layer + index * columns + jindex * current_depth + kindex)
                     = *(o_output_layer + index * columns + jindex * current_depth + kindex) +
-                    *(i_input_layer + index * columns + jindex * current_depth + kindex)
+                    *(i_input_layer + index * columns + jindex * current_depth + kindex);
                 }
             }
         }
@@ -880,11 +884,11 @@ size_t rosnet_simulation_classifier(element_t *i_input_data, size_t i_rows,
         columns = aux_columns;
         //addition
         for(index = 0; index < rows; index++) {
-            for(jidnex = 0; jindex < columns; jindex++) {
+            for(jindex = 0; jindex < columns; jindex++) {
                 for(kindex = 0; kindex < current_depth; kindex++) {
                     *(o_output_layer + index * columns + jindex * current_depth + kindex)
                     = *(o_output_layer + index * columns + jindex * current_depth + kindex) +
-                    *(i_input_layer + index * columns + jindex * current_depth + kindex)
+                    *(i_input_layer + index * columns + jindex * current_depth + kindex);
                 }
             }
         }
@@ -899,10 +903,10 @@ size_t rosnet_simulation_classifier(element_t *i_input_data, size_t i_rows,
     filter_column = 3;
     avg_pooling_3D(i_input_layer, rows, columns, current_depth,
                    filter_row,  filter_column,
-                   stride_row, stride_column,
+                   stride_row, stride_column, padding_type,
                    o_output_layer, &aux_rows, &aux_columns);
     for(index = 0; index < rows; index++) {
-        for(jidnex = 0; jindex < columns; jindex++) {
+        for(jindex = 0; jindex < columns; jindex++) {
             for(kindex = 0; kindex < current_depth; kindex++) {
                 *(i_input_layer + index * columns + jindex * current_depth + kindex)
                 = *(o_output_layer + index * columns + jindex * current_depth + kindex);
@@ -961,13 +965,24 @@ size_t rosnet_simulation_classifier(element_t *i_input_data, size_t i_rows,
 }
  
 int main(void) {
-    /* TODO: Add some input data from somewhere
-    size_t answer = alexnet_simulation_classify(element_t *i_input_data, size_t i_rows,
-                                                size_t i_columns, g_i_input_layer,
-                                                g_i_conv_output, g_kernel,
-                                                g_o_output_layer);
-    */
-    size_t  answer = 0;
+    const size_t image_rows = 256;
+    const size_t image_cols = 256;
+    const size_t image_depth = 3;
+    element_t test_image[image_rows * image_cols * image_depth];
+    
+    for(size_t i = 0; i < image_rows; i++) {
+        for(size_t j = 0; j < image_cols; j++) {
+            test_image[i*image_cols*image_depth + j*image_depth + 0] = (element_t)j / image_cols;
+            test_image[i*image_cols*image_depth + j*image_depth + 1] = (element_t)i / image_rows;
+            test_image[i*image_cols*image_depth + j*image_depth + 2] = 0;
+        }
+    }
+    
+    size_t answer = alexnet_simulation_classify(test_image, image_rows, 
+                                              image_cols, g_input_layer, 
+                                              g_conv_output, g_kernel, 
+                                              g_output_layer);
+
     #ifdef DEBUG
         printf("Result: %f\n", answer);
     #endif

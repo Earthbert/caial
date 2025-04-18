@@ -50,14 +50,14 @@ element_t kernel_function (element_t X[], element_t Y[], size_t length) {
 * calcualte de svm function in a point X
 * f(x) = sum for i in [0, training_data_length] of (alpha(i)*y(i)*Kern(x(i), x)) + b
 */
-real_t svm_function (element_t training_data_X[][], element_t training_data_Y[],
+real_t svm_function (element_t training_data_X[][INPUT_LENGTH], element_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     element_t X[], real_t alphas[], real_t b) {
     size_t index;
     real_t sum = 0;
-    for( i = 0; i < training_data_length; i++) {
-        sum = sum + alphas[i] * training_data_Y[i]
-            * kernel_function(training_data_X[i], X, input_length) + b;
+    for( index = 0; index < training_data_length; index++) {
+        sum = sum + alphas[index] * training_data_Y[index]
+            * kernel_function(training_data_X[index], X, input_length) + b;
     }
     return sum;
 }
@@ -77,7 +77,7 @@ size_t my_random (size_t i, size_t j, size_t max) {
 /*
 * Create de SVM
 */
-void train_svm(element_t training_data_X[][], element_t training_data_Y[],
+void train_svm(element_t training_data_X[][INPUT_LENGTH], element_t training_data_Y[],
                size_t training_data_length, size_t input_length,
                real_t alphas[], real_t *b,
                real_t C, real_t tol, real_t max_iterations) {
@@ -146,9 +146,9 @@ void train_svm(element_t training_data_X[][], element_t training_data_Y[],
                 /* Compute miu
                 * miu = 2 Kern(x(i), x(j)) − Kern(x(i), x(i)) − Kern(x(j), x(j)).
                 */
-                miu = 2 * kernel_function(training_data_X[index], training_data_X[jindex])
-                      - kernel_function(training_data_X[index], training_data_X[index])
-                      - kernel_function(training_data_X[jindex], training_data_X[jindex]);
+                miu = 2 * kernel_function(training_data_X[index], training_data_X[jindex], input_length)
+                      - kernel_function(training_data_X[index], training_data_X[index], input_length)
+                      - kernel_function(training_data_X[jindex], training_data_X[jindex], input_length);
                 // if (miu>=0) continue to next i.
                 if (miu >= 0) {
                     continue;
@@ -185,14 +185,14 @@ void train_svm(element_t training_data_X[][], element_t training_data_Y[],
                 * b1 = b − E(j) − y(i)(alpha(i) − alpha_old(i))*Kern(x(i), x(j))
                 *      − y(j)(alpha(j) − alpha_old(j)) * Kern(x(j), x(j))
                 */
-                b1 = b - E_i - training_data_Y[index] * (alphas[index] - old_alpha_i)
-                    * kernel_function(training_data_X[index], training_data_X[index])
+                b1 = *b - E_i - training_data_Y[index] * (alphas[index] - old_alpha_i)
+                    * kernel_function(training_data_X[index], training_data_X[index], input_length)
                     - training_data_Y[jindex] * (alphas[jindex] - old_alpha_j)
-                    * kernel_function(g_training_data_X[index], training_data_X[jindex]);
-                b2 = b - E_j - training_data_Y[index] * (alphas[index] - old_alpha_i)
-                    * kernel_function(training_data_X[index], training_data_X[jindex])
+                    * kernel_function(g_training_data_X[index], training_data_X[jindex], input_length);
+                b2 = *b - E_j - training_data_Y[index] * (alphas[index] - old_alpha_i)
+                    * kernel_function(training_data_X[index], training_data_X[jindex], input_length)
                     - training_data_Y[jindex] * (alphas[jindex] - old_alpha_j)
-                    * kernel_function(training_data_X[jindex], training_data_X[jindex]);
+                    * kernel_function(training_data_X[jindex], training_data_X[jindex], input_length);
                 /* Compute b
                 * if 0 < alpha(i) < C b = b1
                 * else if 0 < alpha(j) < C b = b2
@@ -237,7 +237,7 @@ int main(void)
               TRAINING_DATA_LENGTH, INPUT_LENGTH,
               g_alphas, &g_b,
               C, tol, MAX_ITERATIONS);
-    real_t answer = svm_function(g_training_data_X, TRAINING_DATA_LENGTH,
+    real_t answer = svm_function(g_training_data_X, g_training_data_Y, TRAINING_DATA_LENGTH,
                                  INPUT_LENGTH, g_test_data, g_alphas, g_b);
 
     #ifdef DEBUG

@@ -27,7 +27,7 @@ void initialise_dnn_1(element_t weights[], size_t input_length) {
 /*
 * training a dnn with 1 layer
 */
-void training_dnn_1(element_t training_data_X[][], element_t training_data_Y[],
+void training_dnn_1(element_t training_data_X[][INPUT_LENGTH], element_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     size_t max_iterations,
                     element_t weights[], element_t prediction[], element_t prediction_error[],
@@ -40,7 +40,7 @@ void training_dnn_1(element_t training_data_X[][], element_t training_data_Y[],
         * prediction training_data_length x 1
         * prediction = training_data_X x theta
         */
-        matrix_multiply_vector(training_data_X, training_data_length, input_length,
+        matrix_multiply_vector(&training_data_X[0][0], training_data_length, input_length,
                                weights, prediction);
         
         /*
@@ -77,7 +77,7 @@ void training_dnn_1(element_t training_data_X[][], element_t training_data_Y[],
         * weights_delta input_length x 1
         * weights_delta = training_data_X.T x prediction_delta
         */
-        matrix_T_multiply_vector(training_data_X, training_data_length, input_length,
+        matrix_T_multiply_vector(&training_data_X[0][0], training_data_length, input_length,
                                  prediction_delta, weights_delta);
         /*
         * weights input_length x 1

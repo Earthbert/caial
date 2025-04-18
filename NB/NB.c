@@ -11,7 +11,7 @@
 
 size_t g_training_data_X_BNB [TRAINING_DATA_LENGTH][INPUT_LENGTH];
 size_t g_training_data_Y_BNB [TRAINING_DATA_LENGTH];
-size_t g_test_data_BNB[INPUT_LENGTH]
+size_t g_test_data_BNB[INPUT_LENGTH];
 size_t g_joints[INPUT_LENGTH][INPUT_GROUPS_LENGTH][OUTPUT_GROUPS_LENGTH];
 size_t g_dep_joints[OUTPUT_GROUPS_LENGTH];
 real_t g_partial_probability[OUTPUT_GROUPS_LENGTH];
@@ -23,10 +23,10 @@ real_t g_probability[OUTPUT_GROUPS_LENGTH];
 * converts to a format that works with BNB by grouping interval of values
 * at the same value
 */
-void convert_to_BNB_memory(element_t training_data_X[][], element_t training_data_Y[],
+void convert_to_BNB_memory(element_t training_data_X[][INPUT_LENGTH], element_t training_data_Y[],
                     element_t test_data[],
                     size_t training_data_length, size_t input_length,
-                    size_t training_data_X_BNB[][], size_t training_data_Y_BNB[],
+                    size_t training_data_X_BNB[][INPUT_LENGTH], size_t training_data_Y_BNB[],
                     size_t test_data_BNB[],
                     size_t input_groups_length, size_t output_groups_length) {
     size_t index, jindex, kindex;
@@ -102,10 +102,10 @@ void convert_to_BNB_memory(element_t training_data_X[][], element_t training_dat
 * index the value kindex and on training_data_Y has value vindex
 * dep_joints[vindex] - how many elements in training_data_Y has value vindex
 */
-void training_BNB(size_t training_data_X[][], size_t training_data_Y[],
+void training_BNB(size_t training_data_X[][INPUT_LENGTH], size_t training_data_Y[],
                     size_t training_data_length, size_t input_length,
                     size_t input_groups_length, size_t output_groups_length,
-                    size_t joints[][][], size_t dep_joints[]) {
+                    size_t joints[][INPUT_GROUPS_LENGTH][OUTPUT_GROUPS_LENGTH], size_t dep_joints[]) {
     size_t index, jindex, kindex, vindex;
 
     /*
@@ -124,8 +124,8 @@ void training_BNB(size_t training_data_X[][], size_t training_data_Y[],
     //calculate the joints
     for(jindex = 0; jindex < training_data_length; jindex++) {
         for(index = 0; index < input_length; index++) {
-            kindex = training_data_X[jidnex][index];
-            vindex = training_data_Y[jidnex];
+            kindex = training_data_X[jindex][index];
+            vindex = training_data_Y[jindex];
             joints[index][kindex][vindex] = joints[index][kindex][vindex] + 1;
         }
     }
@@ -135,14 +135,14 @@ void training_BNB(size_t training_data_X[][], size_t training_data_Y[],
         dep_joints[vindex] = 0;
     }
     for(jindex = 0; jindex < training_data_length; jindex++) {
-        vindex = training_data_Y[jidnex];
+        vindex = training_data_Y[jindex];
         dep_joints[vindex] = dep_joints[vindex] + 1;
     }
 }
 
 size_t classify_BNB(size_t test_data[], size_t input_length,
                     size_t input_groups_length, size_t output_groups_length,
-                    size_t joints[][][], size_t dep_joints[],
+                    size_t joints[][INPUT_GROUPS_LENGTH][OUTPUT_GROUPS_LENGTH], size_t dep_joints[],
                     real_t partial_probability[], real_t probability[]) {
 
     size_t index, jidenx, kindex, pindex;
