@@ -25,23 +25,33 @@ $(APP)_opted.riscv: $(FILES)
 	$(CC) $(INCS) $(CFLAGS) $(OPTFLAGS) -o $@ $(FILES) $(OSRCS) $(LFLAGS)
 	$(RISCV_OBJDUMP) $@ > $@.dump
 
+# start simulation without cycle-by-cycle log
+# output of program will be directly write to console
 sim: $(APP).riscv
 	$(SIM) +verbose $<
-	# start simulation without cycle-by-cycle log
-	# output of program will be directly write to console
 
+# start simulation
+# output of program > simv.stdout
+# cycle-by-cycle log > simv.log
 simv: $(APP).riscv
 	$(SIM) +verbose $< $(VERBOSE_TO_FILE)
-	# start simulation
-	# output of program > simv.stdout
-	# cycle-by-cycle log > simv.log
 	
 simopt: $(APP)_opted.riscv
 	$(SIM) $<
 
+# written to simoptv.stdout, simoptv.log instead
 simoptv: $(APP)_opted.riscv
 	$(SIM) +verbose $< $(VERBOSE_TO_FILE)
-	# written to simoptv.stdout, simoptv.log instead
+
+# start simulation with jtag, keep in mind that cpu config should have jtag
+simjtag: $(APP).riscv
+	$(SIM) +jtag_rbb_enable=1 \
+	--rbb-port=3332 \
+	$< \
+
+# start openocd
+openocd:
+	openocd -f openocd.cfg \
 
 # ---------------------------------------------------
 

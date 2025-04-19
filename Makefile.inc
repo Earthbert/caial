@@ -19,3 +19,4 @@ RISCV_OBJDUMP = riscv64-none-elf-objdump --disassemble-all --disassemble-zeroes 
 SIM_PREFIX = $(ROCKET_CHIP)/out/emulator/freechips.rocketchip.system.TestHarness/freechips.rocketchip.system.
 SIM = $(SIM_PREFIX)$(SIMCONFIG)/verilator/elf.dest/emulator
 VERBOSE_TO_FILE = > $@.stdout 2> >(spike-dasm > $@.log)
+RISCV_DEBUG = ${RISCV_TESTS_ROOT}/debug

@@ -4,7 +4,7 @@
 
 void *memset(void *ptr, int value, long unsigned int num);
 
-#define EXPONENTIAL_PRECISION 5
+#define EXPONENTIAL_PRECISION 8
 /**
  * Returns approximate value of e^x
  * using sum of first n terms of Taylor Series

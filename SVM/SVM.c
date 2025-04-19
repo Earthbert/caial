@@ -7,6 +7,7 @@
 #include "../common/common.h"
 
 #define MAX_ITERATIONS 15
+#define MAX_GLOBAL_ITERATIONS 100
 
 
 real_t g_alphas[TRAINING_DATA_LENGTH];
@@ -91,12 +92,14 @@ void train_svm(element_t training_data_X[][INPUT_LENGTH], element_t training_dat
     size_t index, jindex;
     size_t current_iterations = 0;
     size_t num_changed_alphas = 0;
+    size_t global_iterations = 0;
 
     /*
     * If the alpha vector has not change for a given number of itereations than
     * the algorithm finish
     */
-    while (current_iterations < max_iterations) {
+    while (current_iterations < max_iterations &&
+           global_iterations < MAX_GLOBAL_ITERATIONS) {
         num_changed_alphas = 0;
         // going trough training data
         for (index = 0; index < training_data_length; index++) {
@@ -217,6 +220,8 @@ void train_svm(element_t training_data_X[][INPUT_LENGTH], element_t training_dat
                 num_changed_alphas = num_changed_alphas + 1;
             }
         }
+
+        global_iterations = global_iterations + 1;
         // if alpha has not change increased the itereations
         if (num_changed_alphas == 0) {
             current_iterations = current_iterations + 1;
@@ -240,7 +245,7 @@ int main(void)
     real_t answer = svm_function(g_training_data_X, g_training_data_Y, TRAINING_DATA_LENGTH,
                                  INPUT_LENGTH, g_test_data, g_alphas, g_b);
 
-    #ifdef DEBUG
+        #ifdef DEBUG
         printf("Result: %f\n", answer);
     #endif
     return 0;
