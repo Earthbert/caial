@@ -30,6 +30,9 @@ $(APP)_opted.riscv: $(FILES)
 sim: $(APP).riscv
 	$(SIM) +verbose $<
 
+sim_pk: $(APP).riscv
+	$(SIM) $(which pk) $<
+
 # start simulation
 # output of program > simv.stdout
 # cycle-by-cycle log > simv.log
