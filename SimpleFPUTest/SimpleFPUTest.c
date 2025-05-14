@@ -49,7 +49,18 @@ int main() {
   long long l_b = 922337203685477;
   result = (double) l_b;
 
-  printf("Double IntToFP convert: result = 0x%x%x - expected = 0x44268000\n", *(result_ptr), *(result_ptr - 1));
+  printf("Double IntToFP convert: result = 0x%x%x - expected = 0x430a36e2eb1c4328\n", *(result_ptr), *(result_ptr - 1));
+
+  int i_result = f_a;
+  printf("Float FPToInt convert: result = 0x%08x - expected = 0x00000258\n", i_result);
+
+  long long l_result = a;
+  result_ptr = (int *)&l_result;
+  result_ptr += 1;
+  printf("Double FPToInt convert: result = 0x%08x%08x - expected = 0x00000000000f4240\n", *(result_ptr), *(result_ptr - 1));
+
+  l_result = -76543238144.413415f;
+  printf("Float FPToInt convert: result = 0x%08x%08x - expected = 0xffffffee2daae000\n", *(result_ptr), *(result_ptr - 1));
 
   return 0;
 }
