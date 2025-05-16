@@ -62,5 +62,23 @@ int main() {
   l_result = -76543238144.413415f;
   printf("Float FPToInt convert: result = 0x%08x%08x - expected = 0xffffffee2daae000\n", *(result_ptr), *(result_ptr - 1));
 
+  float f_d = 99.12f;
+
+  printf("Float compare: result = %d - expected = 0\n", f_a == f_b);
+
+  printf("Float compare: result = %d - expected = 1\n", f_c == f_d);
+
+  printf("Float compare: result = %d - expected = 1\n", f_a > f_b);
+
+  printf("Float compare: result = %d - expected = 0\n", f_c > f_d);
+
+  printf("Float compare: result = %d - expected = 1\n", f_c >= f_d);
+
+  printf("Double compare: result = %d - expected = 0\n", a == b);
+
+  printf("Double compare: result = %d - expected = 1\n", c > a);
+
+  printf("Double compare: result = %d - expected = 0\n", b < a);
+
   return 0;
 }
