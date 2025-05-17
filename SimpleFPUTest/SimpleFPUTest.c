@@ -16,7 +16,7 @@ int main() {
   int *result_ptr = (int *)&result;
   result_ptr += 1;
 
-  printf("Double fmadd: result = 0x%x%x - expected = 0x427e1e38d7be0000\n", *(result_ptr), *(result_ptr - 1));
+  printf("Double fmadd: result = 0x%08x%08x - expected = 0x427e1e38d7be0000\n", *(result_ptr), *(result_ptr - 1));
 
   float f_a = 600.0f;
   float f_b = 125.85f;
@@ -24,13 +24,13 @@ int main() {
   float f_result = 0.0f;
 
   f_result = f_a + f_b;
-  printf("Float add: result = 0x%x - expected = 0x44357666\n", *((unsigned int *)&f_result));
+  printf("Float add: result = 0x%08x - expected = 0x44357666\n", *((unsigned int *)&f_result));
 
   f_result = f_a - f_b;
-  printf("Float sub: result = 0x%x - expected = 0x43ed1333\n", *((unsigned int *)&f_result));
+  printf("Float sub: result = 0x%08x - expected = 0x43ed1333\n", *((unsigned int *)&f_result));
   
   f_result = f_a * f_b;
-  printf("Float multiply result = 0x%x - expected = 0x47937b00\n", *((unsigned int *)&f_result));
+  printf("Float multiply result = 0x%08x - expected = 0x47937b00\n", *((unsigned int *)&f_result));
 
   asm volatile (
     "fnmadd.s %0, %1, %2, %3"
@@ -39,17 +39,17 @@ int main() {
   );
 
   // TODO should be 0xc793ac8f
-  printf("Float fnmadd: result = 0x%x - expected = 0xc793ac8e\n", *((unsigned int *)&f_result));
+  printf("Float fnmadd: result = 0x%08x - expected = 0xc793ac8e\n", *((unsigned int *)&f_result));
 
   int i_a = 666;
   f_result = (float) i_a;
 
-  printf("Float IntToFP convert: result = 0x%x - expected = 0x44268000\n", *((unsigned int *)&f_result));
+  printf("Float IntToFP convert: result = 0x%08x - expected = 0x44268000\n", *((unsigned int *)&f_result));
 
   long long l_b = 922337203685477;
   result = (double) l_b;
 
-  printf("Double IntToFP convert: result = 0x%x%x - expected = 0x430a36e2eb1c4328\n", *(result_ptr), *(result_ptr - 1));
+  printf("Double IntToFP convert: result = 0x%08x%08x - expected = 0x430a36e2eb1c4328\n", *(result_ptr), *(result_ptr - 1));
 
   int i_result = f_a;
   printf("Float FPToInt convert: result = 0x%08x - expected = 0x00000258\n", i_result);
@@ -79,6 +79,40 @@ int main() {
   printf("Double compare: result = %d - expected = 1\n", c > a);
 
   printf("Double compare: result = %d - expected = 0\n", b < a);
+
+  f_result = -f_a;
+
+  printf("Float negative: result = 0x%08x - expected = 0xc4160000\n", *((unsigned int *)&f_result));
+
+  result = -a;
+  result_ptr = (int *)&result;
+  result_ptr += 1;
+  printf("Double negative: result = 0x%08x%08x - expected = 0xc12e848000000000\n", *(result_ptr), *(result_ptr - 1));
+
+  asm volatile (
+    "fmin.s %0, %1, %2"
+    : "=f"(f_result)
+    : "f"(f_a), "f"(f_b)
+  );
+
+  printf("Float min: result = 0x%08x - expected = 0x42fbb333\n", *((unsigned int *)&f_result));
+
+  asm volatile (
+    "fmax.d %0, %1, %2"
+    : "=f"(result)
+    : "f"(c), "f"(b)
+  );
+
+  result_ptr = (int *)&result;
+  result_ptr += 1;
+
+  printf("Double max: result = 0x%08x%08x - expected = 0x42303a435be00000\n", *(result_ptr), *(result_ptr - 1));
+
+  f_result = result;
+  printf("Double to Float convert: result = 0x%08x - expected = 0x5181d21b\n", *((unsigned int *)&f_result));
+
+  result = f_result;
+  printf("Float to Double convert: result = 0x%08x%08x - expected = 0x42303a4360000000\n", *(result_ptr), *(result_ptr - 1));
 
   return 0;
 }
