@@ -114,5 +114,27 @@ int main() {
   result = f_result;
   printf("Float to Double convert: result = 0x%08x%08x - expected = 0x42303a4360000000\n", *(result_ptr), *(result_ptr - 1));
 
+  f_result = a / b;
+  printf("Float divide: result = 0x%08x - expected = 0x3f000000\n", *((unsigned int *)&f_result));
+
+  asm volatile (
+    "fsqrt.s %0, %1"
+    : "=f"(f_result)
+    : "f"(f_a)
+  );
+  printf("Float sqrt: result = 0x%08x - expected = 0x42f6e666\n", *((unsigned int *)&f_result));
+
+  result = b / a;
+  result_ptr = (int *)&result;
+  result_ptr += 1;
+  printf("Double divide: result = 0x%08x%08x - expected = 0x4000000000000000\n", *(result_ptr), *(result_ptr - 1));
+
+  asm volatile (
+    "fsqrt.d %0, %1"
+    : "=f"(result)
+    : "f"(c)
+  );
+  printf("Double sqrt: result = 0x%08x%08x - expected = 0x41101d07589db272\n", *(result_ptr), *(result_ptr - 1));
+
   return 0;
 }
