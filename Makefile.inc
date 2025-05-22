@@ -5,11 +5,14 @@
 # 	you must compile the simulator by yourself first
 ROCKET_CHIP ?= ${ROCKETCHIP}
 SIMCONFIG ?= DefaultConfig
+RV64_TOOLCHAIN_ROOT ?= ${RV64_TOOLCHAIN_ROOT}
 
 # enable process substitution
 SHELL=/bin/bash
 
-RISCV_SYSROOT = /nix/store/82ns43d3xh6wnrl2yl44p5d76mq085cv-newlib-riscv64-none-elf-4.3.0.20230120/riscv64-none-elf
+
+RV_LIBC_PATH ?= $(shell cat $(RV64_TOOLCHAIN_ROOT)/nix-support/orig-libc)
+RV_GCC_PATH ?= $(shell cat $(RV64_TOOLCHAIN_ROOT)/nix-support/orig-cc)
 
 CC = riscv64-none-elf-gcc
 CLANG = clang
@@ -20,11 +23,9 @@ CRTSRC = $(INC_RD)/benchmarks/common/crt.S
 CLANG_FLAGS = -target riscv64-unknown-elf -march=rv64gc \
         -nostdinc -fno-stack-protector \
         -include common/custom_undef.h \
-        --sysroot=$(RISCV_SYSROOT) \
-        -isystem $(RISCV_SYSROOT)/include \
-        -isystem /nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0/lib/gcc/riscv64-none-elf/12.3.0/include \
-        -isystem /nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0/lib/gcc/riscv64-none-elf/12.3.0/include-fixed \
-        --gcc-toolchain=/nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0
+        -isystem $(RV_LIBC_PATH)/riscv64-none-elf/include \
+        -isystem $(RV_GCC_PATH)/lib/gcc/riscv64-none-elf/12.3.0/include \
+        -isystem $(RV_GCC_PATH)/lib/gcc/riscv64-none-elf/12.3.0/include-fixed \
 
 CFLAGS = -mcmodel=medany -std=gnu99 -fno-common -fno-builtin-printf -g
 LFLAGS = -nostdlib -nostartfiles -lm -lgcc -T $(INC_RD)/benchmarks/common/test.ld
