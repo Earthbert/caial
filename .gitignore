@@ -1,2 +1,5 @@
 *.riscv
 *.dump
+*.o
+*.log
+*.stdout

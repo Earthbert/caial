@@ -5,49 +5,69 @@ APP ?= KNN
 FILES = ./$(APP)/$(APP).c    # files that need to compile (they will not be compile separately)
 OPTFLAGS = -O2
 
+SYSCALL = syscalls
+CRT = crt
+
+BUILD_DIR = out
+
 # --------------------------------------------
 include ./Makefile.inc		# include Makefile.inc here
-all: $(APP).riscv
+all: $(BUILD_DIR)/$(APP).riscv
 
 clean:
-	rm $(APP).riscv || true
-	rm $(APP)_opted.riscv || true
-	rm $(APP).riscv.dump || true
-	rm $(APP)_opted.riscv.dump || true
+	rm -rf $(BUILD_DIR) || true
 	rm simv.log || true
 	rm simv.stdout || true
 
-$(APP).riscv: $(FILES)
-	$(CC) $(INCS) $(CFLAGS) -O0 -o $@ $(FILES) $(OSRCS) $(LFLAGS)
+$(BUILD_DIR)/$(SYSCALL).o: $(SYSCALLSRC)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(INCS) $(CFLAGS) -O0 -o $@ -c $^
+
+$(BUILD_DIR)/$(CRT).o: $(CRTSRC)
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(INCS) $(CFLAGS) -O0 -o $@ -c $^
+
+$(BUILD_DIR)/$(APP).o: $(APP)/$(APP).c
+	@mkdir -p $(BUILD_DIR)
+	$(CLANG) $(INCS) $(CLANG_FLAGS) -O0 -o $@ -c $<
+
+$(BUILD_DIR)/$(APP)_opted.o: $(APP)/$(APP).c
+	@mkdir -p $(BUILD_DIR)
+	$(CLANG) $(INCS) $(CLANG_FLAGS) $(OPTFLAGS) -o $@ -c $<
+
+$(BUILD_DIR)/$(APP).riscv: $(BUILD_DIR)/$(APP).o $(BUILD_DIR)/$(SYSCALL).o $(BUILD_DIR)/$(CRT).o
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(INCS) $(CFLAGS) -O0 -o $@ $(LFLAGS) $^
 	$(RISCV_OBJDUMP) $@ > $@.dump
 
-$(APP)_opted.riscv: $(FILES)
-	$(CC) $(INCS) $(CFLAGS) $(OPTFLAGS) -o $@ $(FILES) $(OSRCS) $(LFLAGS)
+$(BUILD_DIR)/$(APP)_opted.riscv: $(BUILD_DIR)/$(APP)_opted.o $(BUILD_DIR)/$(SYSCALL).o $(BUILD_DIR)/$(CRT).o
+	@mkdir -p $(BUILD_DIR)
+	$(CC) $(INCS) $(CFLAGS) $(OPTFLAGS) -o $@ $(LFLAGS) $^
 	$(RISCV_OBJDUMP) $@ > $@.dump
 
 # start simulation without cycle-by-cycle log
 # output of program will be directly write to console
-sim: $(APP).riscv
+sim: $(BUILD_DIR)/$(APP).riscv
 	$(SIM) +verbose $<
 
-sim_pk: $(APP).riscv
+sim_pk: $(BUILD_DIR)/$(APP).riscv
 	$(SIM) $(which pk) $<
 
 # start simulation
 # output of program > simv.stdout
 # cycle-by-cycle log > simv.log
-simv: $(APP).riscv
+simv: $(BUILD_DIR)/$(APP).riscv
 	$(SIM) +verbose $< $(VERBOSE_TO_FILE)
 	
-simopt: $(APP)_opted.riscv
+simopt: $(BUILD_DIR)/$(APP)_opted.riscv
 	$(SIM) $<
 
 # written to simoptv.stdout, simoptv.log instead
-simoptv: $(APP)_opted.riscv
+simoptv: $(BUILD_DIR)/$(APP)_opted.riscv
 	$(SIM) +verbose $< $(VERBOSE_TO_FILE)
 
 # start simulation with jtag, keep in mind that cpu config should have jtag
-simjtag: $(APP).riscv
+simjtag: $(BUILD_DIR)/$(APP).riscv
 	$(SIM) +jtag_rbb_enable=1 \
 	--rbb-port=3332 \
 	$< \

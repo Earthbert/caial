@@ -9,10 +9,23 @@ SIMCONFIG ?= DefaultConfig
 # enable process substitution
 SHELL=/bin/bash
 
+RISCV_SYSROOT = /nix/store/82ns43d3xh6wnrl2yl44p5d76mq085cv-newlib-riscv64-none-elf-4.3.0.20230120/riscv64-none-elf
+
 CC = riscv64-none-elf-gcc
+CLANG = clang
 INC_RD = ${RISCV_TESTS_ROOT}/source
 INCS = -I $(INC_RD)/env -I $(INC_RD)/benchmarks/common -I .
-OSRCS = $(INC_RD)/benchmarks/common/syscalls.c $(INC_RD)/benchmarks/common/crt.S		# other src files that need to compile with program srcs
+SYSCALLSRC = $(INC_RD)/benchmarks/common/syscalls.c
+CRTSRC = $(INC_RD)/benchmarks/common/crt.S
+CLANG_FLAGS = -target riscv64-unknown-elf -march=rv64gc \
+        -nostdinc -fno-stack-protector \
+        -include common/custom_undef.h \
+        --sysroot=$(RISCV_SYSROOT) \
+        -isystem $(RISCV_SYSROOT)/include \
+        -isystem /nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0/lib/gcc/riscv64-none-elf/12.3.0/include \
+        -isystem /nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0/lib/gcc/riscv64-none-elf/12.3.0/include-fixed \
+        --gcc-toolchain=/nix/store/rbbjzhcc64dmmyvmbqbqi5lrz01izpyf-riscv64-none-elf-stage-final-gcc-12.3.0
+
 CFLAGS = -mcmodel=medany -std=gnu99 -fno-common -fno-builtin-printf -g
 LFLAGS = -nostdlib -nostartfiles -lm -lgcc -T $(INC_RD)/benchmarks/common/test.ld
 RISCV_OBJDUMP = riscv64-none-elf-objdump --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.data
