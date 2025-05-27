@@ -19,6 +19,15 @@ cd rocket-chip
 submodule update --init --recursive
 ```
 
+* llvm_pass
+```
+git clone https://github.com/Earthbert/NRSSL-LLVMPass
+cd NRSSL-LLVMPass/src
+make build_all
+```
+
+**IMPORTANT**: You must have env var LLVM_PASS set to the path of NRSSL-LLVMPass repo
+
 ### Setup
 
 * nix development env
