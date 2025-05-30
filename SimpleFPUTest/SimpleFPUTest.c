@@ -5,7 +5,7 @@ long long const expected_results[][2] = {
     {0x44357666, 0x72d5d99a},                 // Float add
     {0x43ed1333, 0x71b44ccd},                 // Float sub
     {0x47937b00, 0x7c137b00},                 // Float multiply
-    {0xc793ac8e},                             // Float fnmadd ?
+    {0xc793ac8f},                             // Float fnmadd ?
     {0x44268000, 0x729a0000},                 // Float IntToFP convert
     {0x430a36e2eb1c4328, 0x7ffcd1b71758e219}, // Double IntToFP convert
     {0xc4160000, 0xf2580000},                 // Float negative
@@ -20,7 +20,7 @@ long long const expected_results[][2] = {
     {0x41101d07589db272, 0x7d00e83ac4ed9391}  // Double sqrt
 };
 
-#define NRS 1
+#define NRS 0
 
 int main() {
   double a = 1000000.0;

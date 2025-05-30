@@ -32,7 +32,7 @@ $(BUILD_DIR)/$(APP).o: $(APP)/$(APP).c
 ifdef NRS
 	LD_PRELOAD=${JAVA_HOME}/lib/server/libjvm.so NRSSL_JARS=$(NRSSL_JARS) $(CLANG) $(INCS) $(CLANG_FLAGS) $(PASS_FLAGS) -O0 -o $@ -c $<
 else
-	$(CLANG) $(INCS) $(CLANG_FLAGS) $(PASS_FLAGS) -O0 -o $@ -c $<
+	$(CLANG) $(INCS) $(CLANG_FLAGS) -O0 -o $@ -c $<
 endif
 
 $(BUILD_DIR)/$(APP)_opted.o: $(APP)/$(APP).c
@@ -40,7 +40,7 @@ $(BUILD_DIR)/$(APP)_opted.o: $(APP)/$(APP).c
 ifdef NRS
 	LD_PRELOAD=${JAVA_HOME}/lib/server/libjvm.so NRSSL_JARS=$(NRSSL_JARS) $(CLANG) $(INCS) $(CLANG_FLAGS) $(PASS_FLAGS) $(OPTFLAGS) -o $@ -c $<
 else
-	$(CLANG) $(INCS) $(CLANG_FLAGS) $(PASS_FLAGS) $(OPTFLAGS) -o $@ -c $<
+	$(CLANG) $(INCS) $(CLANG_FLAGS) $(OPTFLAGS) -o $@ -c $<
 endif
 
 $(BUILD_DIR)/$(APP).riscv: $(BUILD_DIR)/$(APP).o $(BUILD_DIR)/$(SYSCALL).o $(BUILD_DIR)/$(CRT).o
