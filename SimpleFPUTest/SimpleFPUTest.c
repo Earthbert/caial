@@ -20,7 +20,7 @@ long long const expected_results[][2] = {
     {0x41101d07589db272, 0x7d00e83ac4ed9391}  // Double sqrt
 };
 
-#define NRS 0
+#define NRS 1
 
 int main() {
   double a = 1000000.0;

@@ -73,7 +73,7 @@ python parser.py  strip_simv.log output
 
 If you want to test one of the algorithms you have to do the next things:
 Compile the algorithm
-If you want to compile for a specific NRS other then IEEE754 set the NRS env.
+If you want to compile for a specific NRS other then IEEE754 set the NRS env, also keep in mind that the SIM_CONFIG should be a config with that NRS.
 ```
 make APP=NAME_OF_THE_ALGORITHM (NRS=NRS_Name)?
 
