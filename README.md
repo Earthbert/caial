@@ -1,6 +1,7 @@
 # CAIAL
 
 C simple AI algorithms for testing bprof on bare metal RISC-V roscket-chip.
+Also accepts other number representation systems then IEEE754. (POSIT currently)
 Currently are implemented the the next AI algoritms Classification Tree (CT),K-nearest neighbors (KNN),Deep neural networks (DNN), Linear regresion (LR), Naive Bayes (NB), Suport Vector Machine (SVM) and K-Means (KMEANS). Their implementation is simple as possible and does not use any libraries.
 
 ## Getting Started
@@ -72,18 +73,19 @@ python parser.py  strip_simv.log output
 
 If you want to test one of the algorithms you have to do the next things:
 Compile the algorithm
+If you want to compile for a specific NRS other then IEEE754 set the NRS env.
 ```
-make APP=NAME_OF_THE_ALGORITHM
+make APP=NAME_OF_THE_ALGORITHM (NRS=NRS_Name)?
 
 ```
 Simulate the algorithm
 ```
-make simv APP=NAME_OF_THE_ALGORITHM
+make simv APP=NAME_OF_THE_ALGORITHM (NRS=NRS_Name)?
 
 ```
 Delete the logs that are not necesary
 ```
-make strip APP=NAME_OF_THE_ALGORITHM
+make strip APP=NAME_OF_THE_ALGORITHM (NRS=NRS_Name)?
 
 ```
 Run the parser
