@@ -31,7 +31,7 @@ CLANG_FLAGS = -target riscv64-unknown-elf -march=rv64gc \
         -isystem $(RV_LIBC_PATH)/riscv64-none-elf/include \
         -isystem $(RV_GCC_PATH)/lib/gcc/riscv64-none-elf/12.3.0/include \
         -isystem $(RV_GCC_PATH)/lib/gcc/riscv64-none-elf/12.3.0/include-fixed
-LLVM_PASS_PATH = $(LLVM_PASS)/src/build/libIEEEToPosit.so
+LLVM_PASS_PATH = $(LLVM_PASS)/src/build/libNRSConversionPass.so
 NRSSL_JARS = $(LLVM_PASS)/src/jars
 PASS_FLAGS = -fpass-plugin=$(LLVM_PASS_PATH)
 
