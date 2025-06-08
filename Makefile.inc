@@ -8,7 +8,7 @@ ifndef LLVM_PASS
     $(error LLVM_PASS environment variable must be set)
 endif
 LLVM_PASS ?= ${LLVM_PASS}
-SIMCONFIG ?= DefaultConfigPosit
+SIMCONFIG ?= DefaultConfig
 RV64_TOOLCHAIN_ROOT ?= ${RV64_TOOLCHAIN_ROOT}
 
 # enable process substitution
