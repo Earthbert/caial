@@ -1,11 +1,17 @@
 #ifndef SIMPLE_FPU_TEST_DATA_H
 #define SIMPLE_FPU_TEST_DATA_H
 
+#include <sys/types.h>
+
 float float_inputs[][3] = {{1.5f, 2.75f, 3.25f}, {4.0f, 5.5f, 6.25f}, {7.75f, 8.0f, 9.5f}, {10.25f, 11.75f, 12.0f}, {13.5f, 14.25f, 15.75f}};
 
 double double_inputs[][3] = {{1.5, 2.75, 3.25}, {4.0, 5.5, 6.25}, {7.75, 8.0, 9.5}, {10.25, 11.75, 12.0}, {13.5, 14.25, 15.75}};
 
-unsigned int const expected_float_results[][16][2] = {
+int32_t int_inputs[] = {0, 1, 2, 3, -1, -2, -3, 1000, -1000, 1234567, -1234567};
+
+int64_t long_inputs[] = {0, 1, 2, 3, -1, -2, -3, 1000, -1000, 1234567890123456789, -1234567890123456789};
+
+u_int32_t const expected_float_op_results[][16][2] = {
     {
         {0x40ec0000, 0x56c00000},
         {0x3f600000, 0x3e000000},
@@ -97,8 +103,18 @@ unsigned int const expected_float_results[][16][2] = {
         {0x406b26a9, 0x4eb26a8f},
     },
 };
+u_int64_t const expected_float_to_double_results[][2] = {
+    {0x3ff8000000000000, 0x4400000000000000}, {0x4010000000000000, 0x5000000000000000}, {0x401f000000000000, 0x5780000000000000},
+    {0x4024800000000000, 0x5a40000000000000}, {0x402b000000000000, 0x5d80000000000000},
+};
+u_int32_t const expected_float_to_int_results[][2] = {
+    {0x1, 0x1}, {0x4, 0x4}, {0x7, 0x7}, {0xa, 0xa}, {0xd, 0xd},
+};
+u_int64_t const expected_float_to_long_results[][2] = {
+    {0x1, 0x1}, {0x4, 0x4}, {0x7, 0x7}, {0xa, 0xa}, {0xd, 0xd},
+};
 
-unsigned long long const expected_double_results[][16][2] = {
+u_int64_t const expected_double_op_results[][16][2] = {
     {
         {0x401d800000000000, 0x56c0000000000000},
         {0x3fec000000000000, 0x3e00000000000000},
@@ -189,6 +205,69 @@ unsigned long long const expected_double_results[][16][2] = {
         {0x3fee50d79435e50d, 0x3f286bca1af286bd},
         {0x400d64d51e0db1c6, 0x4eb26a8f06d8e2de},
     },
+};
+u_int32_t const expected_double_to_float_results[][2] = {
+    {0x3fc00000, 0x44000000}, {0x40800000, 0x50000000}, {0x40f80000, 0x57800000}, {0x41240000, 0x5a400000}, {0x41580000, 0x5d800000},
+};
+u_int32_t const expected_double_to_int_results[][2] = {
+    {0x1, 0x1}, {0x4, 0x4}, {0x7, 0x7}, {0xa, 0xa}, {0xd, 0xd},
+};
+u_int64_t const expected_double_to_long_results[][2] = {
+    {0x1, 0x1}, {0x4, 0x4}, {0x7, 0x7}, {0xa, 0xa}, {0xd, 0xd},
+};
+
+u_int32_t const expected_int_to_float_results[][2] = {
+    {0x0, 0x0},
+    {0x3f800000, 0x40000000},
+    {0x40000000, 0x48000000},
+    {0x40400000, 0x4c000000},
+    {0xbf800000, 0xc0000000},
+    {0xc0000000, 0xb8000000},
+    {0xc0400000, 0xb4000000},
+    {0x447a0000, 0x73e80000},
+    {0xc47a0000, 0x8c180000},
+    {0x4996b438, 0x7e0b5a1c},
+    {0xc996b438, 0x81f4a5e4},
+};
+u_int64_t const expected_int_to_double_results[][2] = {
+    {0x0, 0x0},
+    {0x3ff0000000000000, 0x4000000000000000},
+    {0x4000000000000000, 0x4800000000000000},
+    {0x4008000000000000, 0x4c00000000000000},
+    {0xbff0000000000000, 0xc000000000000000},
+    {0xc000000000000000, 0xb800000000000000},
+    {0xc008000000000000, 0xb400000000000000},
+    {0x408f400000000000, 0x73e8000000000000},
+    {0xc08f400000000000, 0x8c18000000000000},
+    {0x4132d68700000000, 0x7e0b5a1c00000000},
+    {0xc132d68700000000, 0x81f4a5e400000000},
+};
+
+u_int32_t const expected_long_to_float_results[][2] = {
+    {0x0, 0x0},
+    {0x3f800000, 0x40000000},
+    {0x40000000, 0x48000000},
+    {0x40400000, 0x4c000000},
+    {0xbf800000, 0xc0000000},
+    {0xc0000000, 0xb8000000},
+    {0xc0400000, 0xb4000000},
+    {0x447a0000, 0x73e80000},
+    {0xc47a0000, 0x8c180000},
+    {0x5d891088, 0x7fff8123},
+    {0xdd891088, 0x80007edd},
+};
+u_int64_t const expected_long_to_double_results[][2] = {
+    {0x0, 0x0},
+    {0x3ff0000000000000, 0x4000000000000000},
+    {0x4000000000000000, 0x4800000000000000},
+    {0x4008000000000000, 0x4c00000000000000},
+    {0xbff0000000000000, 0xc000000000000000},
+    {0xc000000000000000, 0xb800000000000000},
+    {0xc008000000000000, 0xb400000000000000},
+    {0x408f400000000000, 0x73e8000000000000},
+    {0xc08f400000000000, 0x8c18000000000000},
+    {0x43b12210f47de981, 0x7fff812210f47dea},
+    {0xc3b12210f47de981, 0x80007eddef0b8216},
 };
 
 #endif // SIMPLE_FPU_TEST_DATA_H
