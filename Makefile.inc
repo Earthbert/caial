@@ -4,9 +4,6 @@
 # set the name of the config you want to use for simulation
 # 	you must compile the simulator by yourself first
 ROCKET_CHIP ?= ${ROCKETCHIP}
-ifndef LLVM_PASS
-    $(error LLVM_PASS environment variable must be set)
-endif
 LLVM_PASS ?= ${LLVM_PASS}
 SIMCONFIG ?= DefaultConfigPosit
 RV64_TOOLCHAIN_ROOT ?= ${RV64_TOOLCHAIN_ROOT}
